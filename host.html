@@ -113,7 +113,7 @@ input,select,textarea{font-family:'Cairo',sans-serif;outline:none}
 .te-name:focus{border-color:var(--gold)}
 
 /* ═══ GAME PANEL ═══ */
-#tab-game{display:none}
+#tab-game{display:block}
 .game-layout{display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start}
 
 /* phase badge */
@@ -409,9 +409,8 @@ function setConn(ok){
 }
 
 function syncToServer(){
-  send({type:'host_set_questions', questions: QS.map(q=>({q:q.q,answers:q.answers}))});
+  send({type:"host_set_questions", questions: QS});
   send({type:'host_set_teams', teams: TEAMS});
-  send({type:'host_set_max_strikes', max: CFG.maxStrikes});
 }
 
 function handleMsg(m){
@@ -440,7 +439,18 @@ const PHASE_COLORS = {
 };
 
 function renderGame(){
-  if(!GS.phase) return;
+  // Show initial state even before server responds
+  if(!GS.phase) {
+    GS = {
+      phase: 'setup', round: 0, bank: 0, strikes: 0,
+      max_strikes: CFG.maxStrikes || 3,
+      scores: [0,0], teams: TEAMS,
+      board_tiles: [], questions: QS,
+      fo_buzz_open: false, fo_buzzer: null, fo_buzzer2: null,
+      fo_winner_idx: null, steal_team: null,
+      question_visible: false, active_team: 0
+    };
+  }
   const phase = GS.phase;
 
   // Phase badge
@@ -795,7 +805,6 @@ function toggleCFG(k,el){ CFG[k]=!CFG[k]; el.classList.toggle('on',CFG[k]); save
 function stepCFG(k,d,min,max){
   CFG[k]=Math.min(max,Math.max(min,(CFG[k]||0)+d));
   const el=document.getElementById('sv-'+k); if(el)el.textContent=CFG[k];
-  saveData(); send({type:'host_set_max_strikes', max:CFG[k]});
 }
 
 // ═══ DATA ════════════════════════════════════
