@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Family Feud – TV</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&family=Tajawal:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/* ═══ THEMES ═══ */
+body[data-theme="classic"]{--bg:#00061a;--board-bg:#001033;--tile-hidden:linear-gradient(160deg,#1a3eb5,#0a1f75);--tile-rev:linear-gradient(160deg,#1b5e20,#0d3d11);--tile-border:#000;--gold:#FFCC00;--gold-dim:#B38F00;--gold-glow:rgba(255,204,0,.4);--red:#E53935;--green:#2E7D32;--text:#fff;--muted:rgba(255,255,255,.5);--card:#001855;--board-border:#FFCC00}
+body[data-theme="day"]{--bg:#e8f0fe;--board-bg:#fff;--tile-hidden:linear-gradient(160deg,#1565c0,#0d47a1);--tile-rev:linear-gradient(160deg,#2e7d32,#1b5e20);--tile-border:rgba(0,0,0,.2);--gold:#c49a00;--gold-dim:#8a6d00;--gold-glow:rgba(196,154,0,.4);--red:#d32f2f;--green:#2e7d32;--text:#111;--muted:#555;--card:#fff;--board-border:#c49a00}
+body[data-theme="canva"]{--bg:#1a0533;--board-bg:#2a0845;--tile-hidden:linear-gradient(160deg,#6200ea,#3d0d60);--tile-rev:linear-gradient(160deg,#00897b,#004d40);--tile-border:rgba(0,0,0,.3);--gold:#ff6ec7;--gold-dim:#cc4a9e;--gold-glow:rgba(255,110,199,.4);--red:#ff3864;--green:#00d97e;--text:#fff;--muted:rgba(255,255,255,.55);--card:#3d0d60;--board-border:#ff6ec7}
+body[data-theme="midnight"]{--bg:#000;--board-bg:#0a0a0a;--tile-hidden:linear-gradient(160deg,#1a1a2e,#0f0f1e);--tile-rev:linear-gradient(160deg,#1a3a1a,#0d200d);--tile-border:rgba(255,255,255,.05);--gold:#FFD700;--gold-dim:#B8860B;--gold-glow:rgba(255,215,0,.4);--red:#ff1744;--green:#00e676;--text:#f5f5f5;--muted:rgba(255,255,255,.45);--card:#111;--board-border:#FFD700}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);transition:background .4s}
+
+.tv-wrap{display:flex;flex-direction:column;height:100vh;padding:clamp(8px,2vh,20px);gap:clamp(6px,1.5vh,14px)}
+
+/* SCORES */
+.scores-row{display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,20px)}
+.score-box{
+  flex:1;max-width:280px;
+  background:linear-gradient(160deg,#001855,#00061a);
+  border:3px solid rgba(255,255,255,.12);border-radius:14px;
+  padding:clamp(8px,2vh,14px) clamp(10px,2vw,18px);text-align:center;transition:all .35s;
+}
+.score-box.active{border-color:var(--gold);box-shadow:0 0 28px var(--gold-glow)}
+.sb-bar{height:4px;border-radius:2px;margin-bottom:8px}
+.sb-name{font-size:clamp(.7rem,1.8vw,1rem);font-weight:700;color:rgba(255,204,0,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-score{font-size:clamp(1.8rem,5vw,3rem);font-weight:900;line-height:1.1}
+.bank-box{
+  background:#000;border:3px solid var(--gold);border-radius:14px;
+  padding:clamp(6px,1.5vh,12px) clamp(16px,3vw,28px);text-align:center;
+  box-shadow:inset 0 0 18px rgba(255,204,0,.1),0 0 22px var(--gold-glow);flex-shrink:0;
+}
+.bank-lbl{font-size:clamp(.55rem,1.2vw,.75rem);color:var(--gold);letter-spacing:3px;font-weight:700}
+.bank-val{font-size:clamp(2rem,5vw,3.2rem);font-weight:900;line-height:1}
+
+/* QUESTION */
+.question-wrap{
+  background:linear-gradient(135deg,var(--gold-dim),var(--gold),var(--gold-dim));
+  color:#000;font-weight:900;font-size:clamp(.9rem,2.5vw,1.6rem);
+  padding:clamp(8px,2vh,14px) clamp(12px,3vw,28px);border-radius:12px;text-align:center;
+  box-shadow:0 6px 24px var(--gold-glow);transition:all .4s;
+}
+.question-wrap.hidden-q{background:var(--card);color:var(--muted);border:2px solid rgba(255,255,255,.1);box-shadow:none}
+
+/* BOARD */
+.board-outer{
+  flex:1;background:var(--board-bg);padding:clamp(8px,2vh,16px);
+  border:3px solid var(--board-border);border-radius:16px;
+  box-shadow:inset 0 0 30px rgba(0,0,0,.5);
+  display:flex;align-items:center;
+}
+.board{display:grid;grid-template-columns:1fr 1fr;gap:clamp(5px,1.2vh,10px);width:100%}
+.board.single-col{grid-template-columns:1fr}
+
+/* Tile flip */
+.tile-wrap{perspective:1000px;height:clamp(48px,9vh,80px)}
+.tile{width:100%;height:100%;position:relative;transition:transform .6s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.tile.flipped{transform:rotateX(180deg)}
+.tf,.tb{
+  position:absolute;width:100%;height:100%;backface-visibility:hidden;
+  display:flex;align-items:center;border-radius:9px;border:2px solid var(--tile-border);overflow:hidden;
+}
+.tf{background:var(--tile-hidden);justify-content:center}
+.t-num-hidden{width:clamp(32px,6vw,48px);height:clamp(32px,6vw,48px);border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:clamp(.9rem,2vw,1.4rem);font-weight:900}
+.tb{background:var(--tile-rev);transform:rotateX(180deg);padding:0 clamp(8px,2vw,14px)}
+.t-text{flex:1;font-size:clamp(.8rem,2vw,1.2rem);font-weight:700;text-align:center;padding:0 4px}
+.t-pts{background:#000;color:var(--gold);font-size:clamp(.8rem,1.8vw,1.1rem);font-weight:900;padding:3px clamp(6px,1.5vw,12px);border:1.5px solid var(--gold);border-radius:6px;flex-shrink:0}
+
+/* Strikes */
+.strikes-row{display:flex;gap:clamp(6px,1.5vw,12px);justify-content:center}
+.sx{
+  width:clamp(38px,7vw,58px);height:clamp(38px,7vw,58px);
+  border-radius:11px;border:2px solid rgba(220,50,50,.2);background:rgba(200,0,0,.06);
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(1.2rem,3vw,1.9rem);font-weight:900;color:transparent;transition:all .3s;
+}
+.sx.lit{color:var(--red);border-color:var(--red);background:rgba(229,57,53,.2);text-shadow:0 0 18px rgba(255,0,0,.8);animation:sxB .5s ease}
+@keyframes sxB{0%,100%{transform:scale(1)}40%{transform:scale(1.5) rotate(-12deg)}70%{transform:scale(.9)}}
+
+/* BUZZ WINNER BANNER */
+.buzz-banner{
+  position:fixed;top:0;left:0;right:0;
+  background:rgba(0,0,0,.92);backdrop-filter:blur(10px);
+  padding:clamp(14px,4vh,28px);text-align:center;
+  transform:translateY(-120%);transition:transform .5s cubic-bezier(.34,1.56,.64,1);
+  z-index:50;border-bottom:3px solid var(--gold);
+}
+.buzz-banner.show{transform:translateY(0)}
+.bb-label{font-size:clamp(.6rem,1.5vw,.85rem);color:var(--muted);letter-spacing:3px;margin-bottom:6px}
+.bb-name{font-size:clamp(1.8rem,5vw,3.5rem);font-weight:900;color:var(--gold);text-shadow:0 0 30px var(--gold-glow)}
+.bb-team{font-size:clamp(.8rem,2vw,1.1rem);color:var(--muted);margin-top:4px}
+
+/* STRIKE OVERLAY */
+.stk-ov{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;gap:clamp(16px,4vw,36px);z-index:100;opacity:0;pointer-events:none;transition:opacity .25s}
+.stk-ov.on{opacity:1}
+.big-x{font-size:min(16rem,42vw);font-weight:900;color:var(--red);text-shadow:0 0 80px rgba(255,0,0,.9);animation:bxP .6s cubic-bezier(.34,1.56,.64,1);line-height:1}
+@keyframes bxP{0%{transform:scale(0) rotate(-60deg)}60%{transform:scale(1.15) rotate(8deg)}100%{transform:scale(1)}}
+
+/* ROUND WINNER OVERLAY */
+.win-ov{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(0,20,70,.97),rgba(0,0,0,.97));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:200;opacity:0;pointer-events:none;transition:opacity .3s}
+.win-ov.on{opacity:1;pointer-events:all}
+.win-trophy{font-size:clamp(3rem,8vw,6rem);animation:tF 1s ease infinite}
+@keyframes tF{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.win-title{font-size:clamp(2rem,6vw,4rem);font-weight:900;color:var(--gold);text-shadow:0 0 40px var(--gold-glow);text-align:center}
+.win-tap{font-size:clamp(.8rem,1.8vw,1rem);color:var(--muted);margin-top:6px}
+
+/* GAME OVER */
+.gameover-ov{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(0,10,40,.98),#000);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:300;opacity:0;pointer-events:none;transition:opacity .4s}
+.gameover-ov.on{opacity:1}
+.go-title{font-family:'Tajawal',sans-serif;font-size:clamp(3rem,9vw,7rem);font-weight:900;color:var(--gold);text-shadow:0 0 60px var(--gold-glow)}
+.go-scores{display:flex;gap:clamp(14px,4vw,30px);flex-wrap:wrap;justify-content:center}
+.go-item{text-align:center}
+.go-name{font-size:clamp(.8rem,2vw,1.1rem);color:var(--muted)}
+.go-pts{font-size:clamp(2.5rem,6vw,4rem);font-weight:900}
+
+/* Confetti */
+.cf{position:fixed;inset:0;pointer-events:none;z-index:299}
+.cp{position:absolute;animation:cfF linear forwards}
+@keyframes cfF{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(115vh) rotate(800deg);opacity:0}}
+
+/* Phase label bottom */
+.phase-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);padding:6px;text-align:center;font-size:clamp(.6rem,1.5vw,.82rem);color:var(--muted);letter-spacing:2px}
+</style>
+</head>
+<body data-theme="classic">
+
+<div class="tv-wrap">
+  <div class="scores-row" id="scores-row"></div>
+  <div class="question-wrap hidden-q" id="question-wrap">Family Feud</div>
+  <div class="board-outer"><div class="board" id="board"></div></div>
+  <div class="strikes-row" id="strikes-row"></div>
+</div>
+
+<!-- Buzz winner banner -->
+<div class="buzz-banner" id="buzz-banner">
+  <div class="bb-label">ضغط الزر أولاً</div>
+  <div class="bb-name" id="bb-name">—</div>
+  <div class="bb-team" id="bb-team">—</div>
+</div>
+
+<!-- Strike overlay -->
+<div class="stk-ov" id="stk-ov"><div id="stk-wrap" style="display:flex;gap:32px"></div></div>
+
+<!-- Round winner overlay -->
+<div class="win-ov" id="win-ov" onclick="this.classList.remove('on')">
+  <div class="win-trophy">🏆</div>
+  <div class="win-title" id="win-title">الفائز!</div>
+  <div class="win-tap">اضغط للمتابعة</div>
+</div>
+
+<!-- Game Over -->
+<div class="gameover-ov" id="gameover-ov">
+  <div class="go-title">🏆</div>
+  <div class="go-title" id="go-winner" style="font-size:clamp(2rem,5vw,3rem)">الفائز!</div>
+  <div class="go-scores" id="go-scores"></div>
+</div>
+
+<div class="cf" id="cf"></div>
+<div class="phase-bar" id="phase-bar">Family Feud</div>
+
+<script>
+const WS_URL = `ws://${location.hostname}:8000/ws`;
+const PHASE_AR = {setup:'الإعداد',faceoff:'المواجهة',playpass:'اختيار اللعب',playing:'يلعب',steal:'السرقة',end_round:'نهاية الجولة',game_over:'نهاية اللعبة'};
+let GS = {}, ws;
+
+function connect(){
+  ws = new WebSocket(WS_URL);
+  ws.onopen = () => { ws.send(JSON.stringify({type:'tv_join'})); };
+  ws.onclose = () => setTimeout(connect, 3000);
+  ws.onmessage = e => { try{ handle(JSON.parse(e.data)); }catch{} };
+}
+
+function handle(m){
+  if(m.type==='state'){ GS=m; render(); }
+  else if(m.type==='strike_flash'){ showStrikes(m.count); }
+  else if(m.type==='round_winner'){ showRoundWinner(m.team, m.team_idx); }
+  else if(m.type==='buzz_winner'){ showBuzzBanner(m.player,1); }
+  else if(m.type==='buzz_winner2'){ showBuzzBanner(m.player,2); }
+  else if(m.type==='buzz_reset'||m.type==='buzz_opened'){ hideBuzzBanner(); }
+  // theme sync
+  if(m.theme) document.body.setAttribute('data-theme', m.theme);
+}
+
+function render(){
+  if(!GS.phase) return;
+  // theme
+  // Phase bar
+  document.getElementById('phase-bar').textContent = PHASE_AR[GS.phase] || GS.phase;
+  // Scores
+  renderScores();
+  // Question
+  const qw = document.getElementById('question-wrap');
+  const questions = GS.questions || [];
+  const q = questions[GS.round||0];
+  if(GS.question_visible && q){
+    qw.textContent = q.q;
+    qw.className = 'question-wrap';
+  } else {
+    qw.textContent = 'Family Feud';
+    qw.className = 'question-wrap hidden-q';
+  }
+  // Board
+  renderBoard();
+  // Strikes
+  renderStrikes();
+  // Game over
+  if(GS.phase==='game_over') showGameOver();
+}
+
+function renderScores(){
+  const el = document.getElementById('scores-row');
+  const teams = GS.teams || [{name:'الفريق الأزرق',color:'#2979FF'},{name:'الفريق الأحمر',color:'#E53935'}];
+  const scores = GS.scores || [0,0];
+  const bank = GS.bank || 0;
+  el.innerHTML = `
+    ${teams.map((t,i)=>`
+      <div class="score-box${i===(GS.active_team||0)?' active':''}">
+        <div class="sb-bar" style="background:${t.color}"></div>
+        <div class="sb-name" style="color:${t.color}">${esc(t.name)}</div>
+        <div class="sb-score">${scores[i]}</div>
+      </div>`).join(`
+    <div class="bank-box">
+      <div class="bank-lbl">البنك</div>
+      <div class="bank-val">${bank}</div>
+    </div>`)}`;
+}
+
+function renderBoard(){
+  const el = document.getElementById('board');
+  const tiles = GS.board_tiles || [];
+  if(!tiles.length){ el.innerHTML=''; return; }
+  el.className = 'board' + (tiles.length<=3?' single-col':'');
+  el.innerHTML = tiles.map((t,i)=>`
+    <div class="tile-wrap">
+      <div class="tile${t.revealed?' flipped':''}">
+        <div class="tf"><div class="t-num-hidden">${i+1}</div></div>
+        <div class="tb">
+          <div class="t-text">${esc(t.text)}</div>
+          <div class="t-pts">${t.pts}</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderStrikes(){
+  const el = document.getElementById('strikes-row');
+  const max = GS.max_strikes || 3;
+  const cur = GS.strikes || 0;
+  if(GS.phase==='faceoff'||GS.phase==='setup'||GS.phase==='playpass'){ el.innerHTML=''; return; }
+  el.innerHTML = Array.from({length:max},(_,i)=>
+    `<div class="sx${i<cur?' lit':''}">✕</div>`).join('');
+}
+
+// Strike flash overlay
+let strikeTimer;
+function showStrikes(count){
+  const ov = document.getElementById('stk-ov');
+  const wrap = document.getElementById('stk-wrap');
+  wrap.innerHTML = '';
+  for(let i=0;i<count;i++){
+    const x=document.createElement('div'); x.className='big-x'; x.textContent='✕';
+    x.style.animationDelay=`${i*.15}s`; wrap.appendChild(x);
+  }
+  ov.classList.add('on');
+  clearTimeout(strikeTimer);
+  strikeTimer = setTimeout(()=>ov.classList.remove('on'), 1000+(count*150));
+  // Sound via Web Audio
+  try{
+    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    o.type='sawtooth';o.frequency.setValueAtTime(160,ac.currentTime);
+    o.frequency.linearRampToValueAtTime(80,ac.currentTime+.4);
+    g.gain.setValueAtTime(.4,ac.currentTime);g.gain.linearRampToValueAtTime(.01,ac.currentTime+.5);
+    o.start(ac.currentTime);o.stop(ac.currentTime+.5);
+  }catch{}
+}
+
+// Buzz banner
+let buzzTimer;
+function showBuzzBanner(player, slot){
+  const banner = document.getElementById('buzz-banner');
+  document.getElementById('bb-name').textContent = player.name;
+  document.getElementById('bb-name').style.color = player.color;
+  document.getElementById('bb-team').textContent = (slot===2?'الثاني – ':'') + player.team;
+  banner.classList.add('show');
+  clearTimeout(buzzTimer);
+  buzzTimer = setTimeout(hideBuzzBanner, 8000);
+  try{
+    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    o.type='square';o.frequency.setValueAtTime(400,ac.currentTime);
+    o.frequency.exponentialRampToValueAtTime(200,ac.currentTime+.2);
+    g.gain.setValueAtTime(.5,ac.currentTime);g.gain.exponentialRampToValueAtTime(.01,ac.currentTime+.4);
+    o.start(ac.currentTime);o.stop(ac.currentTime+.4);
+  }catch{}
+}
+function hideBuzzBanner(){ document.getElementById('buzz-banner').classList.remove('show'); }
+
+// Round winner
+function showRoundWinner(teamName, tidx){
+  const teams = GS.teams||[{color:'#FFCC00'},{color:'#E53935'}];
+  document.getElementById('win-title').textContent = `🎉 ${teamName}`;
+  document.getElementById('win-ov').classList.add('on');
+  spawnConfetti();
+}
+
+// Game over
+function showGameOver(){
+  const go = document.getElementById('gameover-ov');
+  if(go.classList.contains('on')) return;
+  const teams = GS.teams||[{name:'أ',color:'#FFCC00'},{name:'ب',color:'#E53935'}];
+  const scores = GS.scores||[0,0];
+  const sorted = [...teams.map((t,i)=>({...t,score:scores[i]}))].sort((a,b)=>b.score-a.score);
+  const isTie = sorted.length>1&&sorted[0].score===sorted[1].score;
+  document.getElementById('go-winner').textContent = isTie?'🤝 تعادل!':'الفائز: '+sorted[0].name;
+  document.getElementById('go-scores').innerHTML = sorted.map(t=>
+    `<div class="go-item"><div class="go-name">${esc(t.name)}</div><div class="go-pts" style="color:${t.color}">${t.score}</div></div>`
+  ).join('');
+  go.classList.add('on');
+  spawnConfetti();
+}
+
+function spawnConfetti(){
+  const c=document.getElementById('cf');c.innerHTML='';
+  const cols=['#FFCC00','#FF6B6B','#4ECDC4','#45B7D1','#FFEAA7','#a29bfe'];
+  for(let i=0;i<120;i++){
+    const p=document.createElement('div');p.className='cp';
+    const sz=5+Math.random()*9;
+    p.style.cssText=`left:${Math.random()*100}%;top:-20px;width:${sz}px;height:${sz}px;background:${cols[~~(Math.random()*cols.length)]};border-radius:${Math.random()>.5?'50%':'3px'};animation-duration:${2.5+Math.random()*3}s;animation-delay:${Math.random()*2}s;`;
+    c.appendChild(p);
+  }
+}
+
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+connect();
+</script>
+</body>
+</html>

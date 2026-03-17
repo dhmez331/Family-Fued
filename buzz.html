@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Family Feud – Buzz</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFCC00;--gold-dim:#B38F00;--red:#E53935;--bg:#00061a;--card:#001855;--border:rgba(255,255,255,.08);--muted:rgba(255,255,255,.45)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow:hidden}
+
+/* SETUP */
+#setup{width:100%;max-width:400px;text-align:center}
+.logo{font-size:2.4rem;font-weight:900;color:var(--gold);text-shadow:0 0 30px rgba(255,204,0,.4);margin-bottom:4px}
+.sub{font-size:.8rem;color:var(--muted);letter-spacing:3px;margin-bottom:28px}
+.field{margin-bottom:13px;text-align:right}
+.field label{display:block;font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
+.finput{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:9px;color:#fff;font-family:'Cairo',sans-serif;font-size:1rem;padding:11px 13px;direction:rtl;outline:none;transition:border-color .2s}
+.finput:focus{border-color:var(--gold)}
+.team-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.team-btn{flex:1;min-width:100px;padding:10px 12px;border-radius:9px;font-family:'Cairo',sans-serif;font-size:.88rem;font-weight:700;border:2px solid transparent;background:rgba(255,255,255,.06);color:var(--muted);cursor:pointer;transition:all .2s}
+.team-btn.sel{color:#000;border-color:transparent}
+.join-btn{width:100%;margin-top:18px;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#000;font-family:'Cairo',sans-serif;font-size:1.15rem;font-weight:900;padding:14px;border-radius:12px;border:none;cursor:pointer;box-shadow:0 6px 20px rgba(255,204,0,.35);transition:all .2s}
+.join-btn:hover{transform:translateY(-2px)}
+.err{color:var(--red);font-size:.8rem;margin-top:6px;min-height:17px}
+
+/* BUZZ */
+#buzz-screen{display:none;width:100%;max-width:420px;flex-direction:column;align-items:center;gap:18px;text-align:center}
+.p-info{background:var(--card);border:1px solid rgba(255,204,0,.2);border-radius:12px;padding:11px 18px;width:100%}
+.p-name{font-size:1.1rem;font-weight:900}
+.p-team{font-size:.76rem;color:var(--muted);margin-top:2px}
+
+.status{padding:8px 20px;border-radius:18px;font-size:.88rem;font-weight:700;border:1.5px solid;transition:all .4s}
+.s-wait{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.15);color:var(--muted)}
+.s-open{background:rgba(229,57,53,.1);border-color:var(--red);color:#ff6b6b;animation:sP .8s ease infinite}
+.s-won{background:rgba(46,125,50,.14);border-color:#4caf50;color:#81c784}
+.s-lost{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:var(--muted)}
+@keyframes sP{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+
+/* BIG BUZZ BUTTON */
+.buzz-btn{
+  width:min(240px,62vw);height:min(240px,62vw);border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#ff6b6b,var(--red),#8b0000);
+  border:none;box-shadow:0 0 0 8px rgba(229,57,53,.15),0 0 0 16px rgba(229,57,53,.08),0 14px 0 #5a0000,0 16px 28px rgba(0,0,0,.6);
+  font-family:'Cairo',sans-serif;font-size:clamp(1.3rem,4vw,1.8rem);font-weight:900;color:#fff;
+  text-shadow:0 2px 5px rgba(0,0,0,.5);cursor:pointer;transition:all .1s;
+  position:relative;top:0;-webkit-user-select:none;user-select:none;
+}
+.buzz-btn.idle{animation:bI 2.5s ease-in-out infinite}
+@keyframes bI{0%,100%{box-shadow:0 0 0 8px rgba(229,57,53,.15),0 0 0 16px rgba(229,57,53,.08),0 14px 0 #5a0000,0 16px 28px rgba(0,0,0,.6)}50%{box-shadow:0 0 0 14px rgba(229,57,53,.25),0 0 0 28px rgba(229,57,53,.12),0 14px 0 #5a0000,0 20px 40px rgba(229,57,53,.35)}}
+.buzz-btn:disabled{background:radial-gradient(circle at 35% 35%,#555,#333,#111);box-shadow:0 6px 0 #000,0 8px 18px rgba(0,0,0,.4);cursor:not-allowed;animation:none;opacity:.6}
+.buzz-btn.won{background:radial-gradient(circle at 35% 35%,#a5d6a7,#4caf50,#1b5e20);box-shadow:0 0 0 12px rgba(76,175,80,.25),0 0 0 24px rgba(76,175,80,.12),0 14px 0 #0d3b12,0 16px 28px rgba(76,175,80,.4);animation:wP .6s ease}
+@keyframes wP{0%,100%{transform:scale(1)}40%{transform:scale(1.1)}70%{transform:scale(.96)}}
+.buzz-btn:not(:disabled):active{top:8px;box-shadow:0 0 0 8px rgba(229,57,53,.15),0 6px 0 #5a0000,0 8px 18px rgba(0,0,0,.5);animation:none}
+.buzz-hint{font-size:.8rem;color:var(--muted);min-height:18px}
+
+.winner-banner{width:100%;background:rgba(76,175,80,.1);border:1.5px solid rgba(76,175,80,.35);border-radius:12px;padding:13px 16px;display:none}
+.wb-lbl{font-size:.68rem;color:rgba(76,175,80,.7);letter-spacing:2px;margin-bottom:3px}
+.wb-name{font-size:1.25rem;font-weight:900;color:#81c784}
+.wb-team{font-size:.78rem;color:var(--muted);margin-top:2px}
+
+.cd{position:fixed;top:11px;left:11px;width:8px;height:8px;border-radius:50%;background:#555;transition:background .3s}
+.cd.on{background:#4caf50}.cd.err{background:var(--red)}
+</style>
+</head>
+<body>
+<div class="cd" id="cd"></div>
+
+<!-- SETUP -->
+<div id="setup">
+  <div class="logo">Family Feud</div>
+  <div class="sub">سجّل دخولك</div>
+  <div class="field">
+    <label>اسمك</label>
+    <input class="finput" id="inp-name" placeholder="مثال: محمد" maxlength="30">
+  </div>
+  <div class="field">
+    <label>فريقك</label>
+    <div class="team-btns" id="team-btns"></div>
+  </div>
+  <div class="err" id="err"></div>
+  <button class="join-btn" onclick="join()">انضم للعبة 🎯</button>
+</div>
+
+<!-- BUZZ -->
+<div id="buzz-screen">
+  <div class="p-info">
+    <div class="p-name" id="p-name">—</div>
+    <div class="p-team" id="p-team">—</div>
+  </div>
+  <div class="status s-wait" id="status-badge">⏳ انتظر الهوست…</div>
+  <button class="buzz-btn" id="buzz-btn" disabled onclick="doBuzz()">BUZZ!</button>
+  <div class="buzz-hint" id="buzz-hint">الزر مغلق</div>
+  <div class="winner-banner" id="winner-banner">
+    <div class="wb-lbl">ضغط أولاً ✅</div>
+    <div class="wb-name" id="wb-name">—</div>
+    <div class="wb-team" id="wb-team">—</div>
+  </div>
+</div>
+
+<script>
+const WS_URL = `ws://${location.hostname}:8000/ws`;
+const TEAMS = [
+  {name:'الفريق الأزرق',color:'#2979FF'},
+  {name:'الفريق الأحمر',color:'#E53935'},
+];
+let ws, myName='', myTeam='', myColor='', myTidx=0;
+let buzzOpen=false, iWon=false;
+let selTidx=0;
+
+// Build team buttons
+function buildTeams(){
+  const el=document.getElementById('team-btns');
+  el.innerHTML='';
+  TEAMS.forEach((t,i)=>{
+    const b=document.createElement('button');
+    b.className='team-btn'+(i===selTidx?' sel':'');
+    b.textContent=t.name;
+    if(i===selTidx) b.style.background=t.color;
+    b.onclick=()=>{selTidx=i;buildTeams()};
+    el.appendChild(b);
+  });
+}
+buildTeams();
+
+function connect(){
+  ws=new WebSocket(WS_URL);
+  ws.onopen=()=>{document.getElementById('cd').className='cd on'};
+  ws.onclose=()=>{document.getElementById('cd').className='cd err';setTimeout(connect,3000)};
+  ws.onerror=()=>document.getElementById('cd').className='cd err';
+  ws.onmessage=e=>{try{handle(JSON.parse(e.data))}catch{}};
+}
+function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+
+function join(){
+  const name=document.getElementById('inp-name').value.trim();
+  if(!name){document.getElementById('err').textContent='أدخل اسمك';return}
+  myName=name; myTidx=selTidx;
+  myTeam=TEAMS[selTidx].name; myColor=TEAMS[selTidx].color;
+  send({type:'player_join',name:myName,team_idx:myTidx});
+  showBuzz();
+}
+
+function showBuzz(){
+  document.getElementById('setup').style.display='none';
+  const bs=document.getElementById('buzz-screen');
+  bs.style.display='flex';
+  document.getElementById('p-name').textContent=myName;
+  const pt=document.getElementById('p-team');
+  pt.textContent=myTeam; pt.style.color=myColor;
+  document.getElementById('p-info'||'p-name').closest?.('.p-info')?.style?.setProperty('border-color',myColor+'55');
+}
+
+function doBuzz(){
+  if(!buzzOpen||iWon)return;
+  send({type:'buzz'});
+  document.getElementById('buzz-btn').disabled=true;
+}
+
+function handle(m){
+  if(m.type==='joined'){buzzOpen=m.buzz_open;if(m.buzz_winner)showWinner(m.buzz_winner);else updateState()}
+  else if(m.type==='buzz_opened'){buzzOpen=true;iWon=false;document.getElementById('winner-banner').style.display='none';updateState()}
+  else if(m.type==='buzz_closed'){buzzOpen=false;updateState()}
+  else if(m.type==='buzz_reset'){buzzOpen=false;iWon=false;document.getElementById('winner-banner').style.display='none';updateState()}
+  else if(m.type==='buzz_winner'){showWinner(m.player)}
+  else if(m.type==='buzz_winner2'){
+    // If I'm buzzer 2
+    if(m.player.name===myName&&m.player.team===myTeam) showWinner(m.player);
+    else showWinner(m.player);
+  }
+}
+
+function updateState(){
+  const btn=document.getElementById('buzz-btn');
+  const badge=document.getElementById('status-badge');
+  const hint=document.getElementById('buzz-hint');
+  if(buzzOpen&&!iWon){
+    btn.disabled=false;btn.classList.add('idle');btn.classList.remove('won');
+    badge.className='status s-open';badge.textContent='🔴 اضغط الآن!';
+    hint.textContent='أول ضغطة تفوز!';
+  } else if(!iWon){
+    btn.disabled=true;btn.classList.remove('idle','won');
+    badge.className='status s-wait';badge.textContent='⏳ انتظر الهوست…';
+    hint.textContent='الزر مغلق';
+  }
+}
+
+function showWinner(w){
+  buzzOpen=false;
+  iWon=(w.name===myName&&w.team===myTeam);
+  const btn=document.getElementById('buzz-btn');
+  const badge=document.getElementById('status-badge');
+  const hint=document.getElementById('buzz-hint');
+  const banner=document.getElementById('winner-banner');
+  btn.disabled=true;btn.classList.remove('idle');
+  if(iWon){
+    btn.classList.add('won');
+    badge.className='status s-won';badge.textContent='🏆 أنت ضغطت أول!';
+    hint.textContent='أعطِ إجابتك للهوست!';
+    if(navigator.vibrate)navigator.vibrate([100,50,200]);
+  } else {
+    btn.classList.remove('won');
+    badge.className='status s-lost';badge.textContent=`${w.name} ضغط أول`;
+    hint.textContent='';
+  }
+  document.getElementById('wb-name').textContent=w.name;
+  document.getElementById('wb-name').style.color=w.color;
+  document.getElementById('wb-team').textContent=w.team;
+  banner.style.display='';
+}
+connect();
+</script>
+</body>
+</html>
