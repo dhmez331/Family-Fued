@@ -557,96 +557,189 @@ function renderStrikes(){
 }
 
 function renderPhaseControls(){
-  const el = document.getElementById('phase-controls');
+  const el    = document.getElementById('phase-controls');
   const phase = GS.phase;
   const teams = GS.teams || TEAMS;
-  const winner_idx = GS.fo_winner_idx;
-  const winner_name = winner_idx!=null ? teams[winner_idx]?.name : '—';
-  const steal_team_name = GS.steal_team!=null ? teams[GS.steal_team]?.name : '—';
+  let html    = '';
 
-  let html = '';
-
+  // ── setup ────────────────────────────────────────────────
   if(phase==='setup'||!phase){
     html = `<div class="ctrl-section">
       <div class="ctrl-title">ابدأ اللعبة</div>
       <div class="ctrl-btns">
         <button class="cb cb-gold" onclick="loadRound(0)">▶ ابدأ الجولة الأولى</button>
-        <button class="cb cb-gray" style="font-size:.76rem" onclick="if(confirm('مسح بيانات اللعبة السابقة؟')){send({type:'host_reset_game'});toast('تم المسح ✓')}">🗑 مسح الجولة السابقة</button>
+        <button class="cb cb-gray" style="font-size:.76rem"
+          onclick="if(confirm('مسح بيانات اللعبة السابقة؟')){send({type:'host_reset_game'});toast('تم المسح ✓')}">
+          🗑 مسح الجولة السابقة
+        </button>
       </div>
     </div>`;
   }
 
+  // ── faceoff ──────────────────────────────────────────────
   else if(phase==='faceoff'){
-    // Buzz controls
     const buzzOpen = GS.fo_buzz_open;
     const b1 = GS.fo_buzzer, b2 = GS.fo_buzzer2;
-    html = `
-    <div class="ctrl-section">
+    const tiles = GS.board_tiles || [];
+
+    // تحكم الزر
+    html += `<div class="ctrl-section">
       <div class="ctrl-title">المواجهة – تحكم الزر</div>
       <div class="ctrl-btns">
         ${buzzOpen
           ? `<button class="cb cb-gray" onclick="closeBuzz()">🔒 أغلق الزر</button>`
           : `<button class="cb cb-accent" onclick="openBuzz()">🔓 افتح الزر للاعبين</button>`}
-        <button class="cb cb-gray" onclick="resetBuzz()">🔄 إعادة ضبط</button>
+        <button class="cb cb-gray" onclick="openBuzz()">🔄 إعادة ضبط الزر</button>
       </div>
     </div>`;
 
+    // لو ضغط B1
     if(b1){
-      const tiles = GS.board_tiles || [];
-      html += `
-      <div class="fo-panel">
-        <div class="ctrl-title">تأكيد الإجابات</div>
-        <div class="fo-slot">
-          <div class="fo-slot-name">
-            <div class="fo-dot" style="background:${b1.color}"></div>
-            ${esc(b1.name)} — ${esc(b1.team)}
-            ${b1.answer_idx!=null?`<span style="color:var(--green);font-size:.72rem">✓ رقم ${b1.answer_idx+1}</span>`:
-              `<span style="color:var(--muted);font-size:.72rem">لم يختر بعد</span>`}
-          </div>
+      const b1ans  = b1.answer_idx;
+      const b1done = b1ans !== null && b1ans !== undefined;
+
+      html += `<div class="fo-panel">
+        <div class="ctrl-title">📍 ${esc(b1.name)} (${esc(b1.team)}) – الإجابة الأولى</div>`;
+
+      if(!b1done){
+        // لم يُحدد جوابه بعد
+        html += `<div style="margin-bottom:8px;font-size:.8rem;color:var(--muted)">اضغط على الإجابة اللي قالها، أو اضغط خطأ:</div>
           <div class="fo-ans-btns">
-            ${tiles.map((t,i)=>`<button class="fo-ans-btn${b1.answer_idx===i?' sel':''}" onclick="setFOAnswer(1,${i})">${i+1}. ${esc(t.text)}</button>`).join('')}
-            <button class="fo-ans-btn wrong${b1.answer_idx===-1?' sel':''}" onclick="setFOAnswer(1,-1)">✕ خاطئة</button>
-          </div>
-        </div>
-        ${b2?`
-        <div class="fo-slot">
-          <div class="fo-slot-name">
-            <div class="fo-dot" style="background:${b2.color}"></div>
-            ${esc(b2.name)} — ${esc(b2.team)}
-            ${b2.answer_idx!=null?`<span style="color:var(--green);font-size:.72rem">✓ رقم ${b2.answer_idx+1}</span>`:
-              `<span style="color:var(--muted);font-size:.72rem">لم يختر بعد</span>`}
-          </div>
-          <div class="fo-ans-btns">
-            ${tiles.filter((_,i)=>!GS.board_tiles[i].revealed||i===b2.answer_idx).map((t,i)=>`<button class="fo-ans-btn${b2.answer_idx===i?' sel':''}" onclick="setFOAnswer(2,${i})">${i+1}. ${esc(t.text)}</button>`).join('')}
-            <button class="fo-ans-btn wrong${b2.answer_idx===-1?' sel':''}" onclick="setFOAnswer(2,-1)">✕ خاطئة</button>
-          </div>
-        </div>`:''}
-      </div>`;
+            ${tiles.map((t,i)=>`<button class="fo-ans-btn" onclick="setFOAnswer(1,${i})">${i+1}. ${esc(t.text)} (${t.pts})</button>`).join('')}
+            <button class="fo-ans-btn wrong" onclick="setFOAnswer(1,-1)">✕ خاطئة / غير موجودة</button>
+          </div>`;
+      } else if(b1ans === -1){
+        // خطأ
+        html += `<div style="color:var(--red);font-size:.88rem;margin-bottom:8px">✕ إجابة خاطئة</div>`;
+      } else {
+        // إجابة صحيحة
+        html += `<div style="color:var(--green);font-size:.88rem;margin-bottom:8px">✓ رقم ${b1ans+1}: ${esc(tiles[b1ans]?.text)} (${tiles[b1ans]?.pts} نقطة)</div>`;
+      }
+      html += `</div>`; // fo-panel
+
+      // ─ منطق ما بعد B1 ─
+      if(b1done){
+        const isTop1 = b1ans === 0; // رقم 1 في القائمة
+
+        if(isTop1 && b1ans !== -1){
+          // فاز B1 بالأعلى → playpass مباشرة
+          html += `<div class="ctrl-section" style="border-color:rgba(255,204,0,.3)">
+            <div class="ctrl-title" style="color:var(--gold)">🏆 ${esc(b1.name)} أجاب رقم 1!</div>
+            <div class="ctrl-btns">
+              <button class="cb cb-green" onclick="doPlayPass('play')">▶ Play – يلعب ${esc(teams[b1.team_idx]?.name)}</button>
+              <button class="cb cb-orange" onclick="doPlayPass('pass')">⏩ Pass – يمرر للخصم</button>
+            </div>
+          </div>`;
+        } else {
+          // ليس رقم 1 → فرصة للاعب الثاني
+          if(!b2){
+            html += `<div class="ctrl-section" style="border-color:rgba(124,106,250,.3)">
+              <div class="ctrl-title">🎯 فرصة اللاعب الثاني</div>
+              <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">
+                ${b1ans===-1 ? 'أجاب خطأ →' : `أجاب رقم ${b1ans+1} →`}
+                الفريق الثاني يحاول يجيب إجابة أعلى
+              </div>
+              <div class="ctrl-btns">
+                <button class="cb cb-accent" onclick="openBuzz()">🔓 افتح الزر للاعب الثاني</button>
+              </div>
+            </div>`;
+          } else {
+            // B2 ضغط - حدد إجابته
+            const b2ans  = b2.answer_idx;
+            const b2done = b2ans !== null && b2ans !== undefined;
+
+            html += `<div class="fo-panel">
+              <div class="ctrl-title">📍 ${esc(b2.name)} (${esc(b2.team)}) – الإجابة الثانية</div>`;
+
+            if(!b2done){
+              html += `<div style="margin-bottom:8px;font-size:.8rem;color:var(--muted)">اضغط على الإجابة اللي قالها:</div>
+                <div class="fo-ans-btns">
+                  ${tiles.map((t,i)=>`<button class="fo-ans-btn" onclick="setFOAnswer(2,${i})">${i+1}. ${esc(t.text)} (${t.pts})</button>`).join('')}
+                  <button class="fo-ans-btn wrong" onclick="setFOAnswer(2,-1)">✕ خاطئة / غير موجودة</button>
+                </div>`;
+            } else {
+              // عُيِّن B2 - قارن
+              let winnerIdx, winnerName, reason;
+              if(b2ans === -1 && b1ans === -1){
+                // كلاهما خطأ → الهوست يختار
+                winnerIdx = -1;
+                reason = 'كلاهما أخطأ';
+              } else if(b2ans === -1){
+                winnerIdx = b1.team_idx;
+                reason = `B2 أخطأ → فاز ${esc(teams[b1.team_idx]?.name)}`;
+              } else if(b1ans === -1){
+                winnerIdx = b2.team_idx;
+                reason = `B1 أخطأ → فاز ${esc(teams[b2.team_idx]?.name)}`;
+              } else if(b1ans <= b2ans){
+                winnerIdx = b1.team_idx;
+                reason = `رقم ${b1ans+1} > رقم ${b2ans+1} → فاز ${esc(teams[b1.team_idx]?.name)}`;
+              } else {
+                winnerIdx = b2.team_idx;
+                reason = `رقم ${b2ans+1} > رقم ${b1ans+1} → فاز ${esc(teams[b2.team_idx]?.name)}`;
+              }
+
+              html += `<div style="font-size:.82rem;color:var(--gold);margin-bottom:8px">النتيجة: ${reason}</div>`;
+              html += `</div>`; // fo-panel
+
+              if(winnerIdx === -1){
+                // كلاهما أخطأ - الهوست يختار
+                html += `<div class="ctrl-section">
+                  <div class="ctrl-title">كلاهما أخطأ – اختر الفريق يدوياً</div>
+                  <div class="ctrl-btns">
+                    ${teams.map((t,i)=>`<button class="cb cb-blue" style="border-color:${t.color}" onclick="skipFO(${i})">دور ${esc(t.name)}</button>`).join('')}
+                  </div>
+                </div>`;
+              } else {
+                const wName = esc(teams[winnerIdx]?.name);
+                html += `<div class="ctrl-section" style="border-color:rgba(255,204,0,.3)">
+                  <div class="ctrl-title" style="color:var(--gold)">🏆 فاز ${wName}!</div>
+                  <div class="ctrl-btns">
+                    <button class="cb cb-green" onclick="doPlayPass('play')">▶ Play – يلعب ${wName}</button>
+                    <button class="cb cb-orange" onclick="doPlayPass('pass')">⏩ Pass – يمرر للخصم</button>
+                  </div>
+                </div>`;
+              }
+              // منع إضافة fo-panel مرتين
+              html = html; // no extra close needed, already closed above
+            }
+            if(!b2done) html += `</div>`; // close fo-panel for b2
+          }
+        }
+      }
     }
 
+    // تخطي يدوي دائماً متاح
     html += `<div class="ctrl-section">
-      <div class="ctrl-title">تخطي المواجهة</div>
+      <div class="ctrl-title" style="font-size:.64rem">تخطي المواجهة يدوياً</div>
       <div class="ctrl-btns">
-        ${teams.map((t,i)=>`<button class="cb cb-blue" style="border-color:${t.color}" onclick="skipFO(${i})">دور ${esc(t.name)}</button>`).join('')}
+        ${teams.map((t,i)=>`<button class="cb cb-blue btn-sm" style="border-color:${t.color};padding:6px 10px;font-size:.76rem" onclick="skipFO(${i})">دور ${esc(t.name)}</button>`).join('')}
       </div>
     </div>`;
   }
 
+  // ── playpass ─────────────────────────────────────────────
   else if(phase==='playpass'){
-    html = `<div class="ctrl-section">
-      <div class="ctrl-title">الفائز: <span style="color:var(--gold)">${esc(winner_name)}</span></div>
+    const wi   = GS.fo_winner_idx ?? 0;
+    const wn   = esc(teams[wi]?.name || '—');
+    html = `<div class="ctrl-section" style="border-color:rgba(255,204,0,.3)">
+      <div class="ctrl-title" style="color:var(--gold)">🏆 الفائز: ${wn}</div>
       <div class="ctrl-btns">
-        <button class="cb cb-green" onclick="doPlayPass('play')">▶ Play – يلعب ${esc(winner_name)}</button>
+        <button class="cb cb-green" onclick="doPlayPass('play')">▶ Play – يلعب ${wn}</button>
         <button class="cb cb-orange" onclick="doPlayPass('pass')">⏩ Pass – يمرر للخصم</button>
       </div>
     </div>`;
   }
 
+  // ── playing ──────────────────────────────────────────────
   else if(phase==='playing'){
-    const at = GS.active_team || 0;
-    const tname = (GS.teams||TEAMS)[at]?.name || '—';
+    const at    = GS.active_team || 0;
+    const tname = esc(teams[at]?.name || '—');
+    const tcol  = teams[at]?.color || 'var(--gold)';
     html = `<div class="ctrl-section">
-      <div class="ctrl-title">يلعب الآن: <span style="color:${(GS.teams||TEAMS)[at]?.color}">${esc(tname)}</span></div>
+      <div class="ctrl-title">يلعب الآن: <span style="color:${tcol}">${tname}</span></div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:8px">
+        اضغط على الإجابة في اللوحة فوق لكشفها، أو اضغط خطأ
+      </div>
       <div class="ctrl-btns">
         <button class="cb cb-red" onclick="doStrike()">✕ إجابة خاطئة</button>
         <button class="cb cb-gray" onclick="revealAll()">👁 كشف الكل</button>
@@ -655,16 +748,25 @@ function renderPhaseControls(){
     </div>`;
   }
 
+  // ── steal ────────────────────────────────────────────────
   else if(phase==='steal'){
-    html = `<div class="ctrl-section">
-      <div class="ctrl-title">السرقة – <span style="color:var(--red)">${esc(steal_team_name)}</span></div>
+    const st  = GS.steal_team ?? 1;
+    const stn = esc(teams[st]?.name || '—');
+    const orig = 1 - st;
+    const origN = esc(teams[orig]?.name || '—');
+    html = `<div class="ctrl-section" style="border-color:rgba(229,57,53,.35)">
+      <div class="ctrl-title" style="color:var(--red)">🎯 السرقة – ${stn}</div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:8px">
+        إجابة واحدة فقط للفريق الثاني
+      </div>
       <div class="ctrl-btns">
-        <button class="cb cb-green" onclick="stealResult(true)">✅ صحيحة – يسرقون النقاط</button>
-        <button class="cb cb-red" onclick="stealResult(false)">✕ خاطئة – النقاط للفريق الأول</button>
+        <button class="cb cb-green" onclick="stealResult(true)">✅ صحيحة – يسرق ${stn} النقاط</button>
+        <button class="cb cb-red" onclick="stealResult(false)">✕ خاطئة – النقاط لـ ${origN}</button>
       </div>
     </div>`;
   }
 
+  // ── end_round ────────────────────────────────────────────
   else if(phase==='end_round'){
     const totalQ = (GS.questions||QS).length;
     const isLast = (GS.round||0)+1 >= totalQ;
@@ -672,18 +774,19 @@ function renderPhaseControls(){
       <div class="ctrl-title">نهاية الجولة</div>
       <div class="ctrl-btns">
         <button class="cb cb-gray" onclick="revealAll()">👁 كشف المتبقي</button>
-        ${isLast
-          ? `<button class="cb cb-gold" onclick="send({type:'host_next_round'})">🏁 نهاية اللعبة</button>`
-          : `<button class="cb cb-gold" onclick="send({type:'host_next_round'})">الجولة التالية ›</button>`}
+        <button class="cb cb-gold" onclick="send({type:'host_next_round'})">
+          ${isLast ? '🏁 نهاية اللعبة' : 'الجولة التالية ›'}
+        </button>
       </div>
     </div>`;
   }
 
+  // ── game_over ────────────────────────────────────────────
   else if(phase==='game_over'){
-    html = `<div class="ctrl-section">
+    html = `<div class="ctrl-section" style="border-color:rgba(255,204,0,.3)">
       <div class="ctrl-title" style="color:var(--gold)">🏆 انتهت اللعبة!</div>
       <div class="ctrl-btns">
-        <button class="cb cb-gold" onclick="send({type:'host_reset_game'})">🔄 لعبة جديدة</button>
+        <button class="cb cb-gold" onclick="resetGame()">🔄 لعبة جديدة</button>
       </div>
     </div>`;
   }
@@ -691,34 +794,20 @@ function renderPhaseControls(){
   el.innerHTML = html;
 }
 
-// ─── Danger Zone: Cancel + Reset ───
+
 function renderDangerZone(){
   const el = document.getElementById('danger-zone-wrap');
   if(!el) return;
   const phase = GS.phase;
-  if(!phase || phase === 'setup' || phase === 'game_over'){
-    el.innerHTML = ''; return;
-  }
+  if(!phase || phase==='setup' || phase==='game_over'){ el.innerHTML=''; return; }
   el.innerHTML = `
     <div style="background:rgba(229,57,53,.06);border:1px dashed rgba(229,57,53,.25);border-radius:10px;padding:12px;margin-top:8px">
-      <div style="font-size:.66rem;font-weight:700;color:rgba(239,83,80,.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:9px">⚠️ منطقة الخطر</div>
+      <div style="font-size:.65rem;font-weight:700;color:rgba(239,83,80,.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">⚠️ منطقة الخطر</div>
       <div style="display:flex;gap:7px;flex-wrap:wrap">
-        <button class="cb" style="background:rgba(229,57,53,.15);border:1px solid rgba(229,57,53,.4);color:#ef9a9a" onclick="cancelGame()">⏹ إلغاء الجولة</button>
-        <button class="cb" style="background:rgba(229,57,53,.15);border:1px solid rgba(229,57,53,.4);color:#ef9a9a" onclick="resetGame()">🔄 إعادة كاملة</button>
+        <button class="cb" style="background:rgba(229,57,53,.15);border:1px solid rgba(229,57,53,.4);color:#ef9a9a;padding:7px 12px;font-size:.78rem" onclick="cancelGame()">⏹ إلغاء الجولة</button>
+        <button class="cb" style="background:rgba(229,57,53,.15);border:1px solid rgba(229,57,53,.4);color:#ef9a9a;padding:7px 12px;font-size:.78rem" onclick="resetGame()">🔄 إعادة كاملة</button>
       </div>
     </div>`;
-}
-
-function cancelGame(){
-  if(!confirm('إلغاء الجولة الحالية والعودة للإعداد؟\n(النقاط تُحفظ)')) return;
-  send({type:'host_cancel_game'});
-  toast('تم إلغاء الجولة');
-}
-
-function resetGame(){
-  if(!confirm('إعادة اللعبة كاملة؟\nستُحذف جميع النقاط!')) return;
-  send({type:'host_reset_game'});
-  toast('تم إعادة اللعبة 🔄');
 }
 
 function renderRoundBtns(){
@@ -758,7 +847,7 @@ function revealAll(){ send({type:'host_reveal_all'}); }
 function endRound(){ send({type:'host_end_round'}); }
 function stealResult(ok){ send({type:'host_steal_result', correct:ok}); }
 function doPlayPass(choice){ send({type:'host_playpass', choice}); }
-function skipFO(teamIdx){ send({type:'host_playpass', choice:'play'}); /* simplified */ }
+function skipFO(teamIdx){ send({type:'host_skip_fo', team_idx: teamIdx}); }
 function setFOAnswer(slot, tileIdx){
   send({type:'host_fo_answer', slot, tile_idx: tileIdx>=0?tileIdx:null});
 }
@@ -929,6 +1018,15 @@ function init(){
   });
 }
 init();
+function cancelGame(){
+  if(!confirm('إلغاء الجولة الحالية؟\n(النقاط تُحفظ)')) return;
+  send({type:'host_cancel_game'}); toast('تم إلغاء الجولة');
+}
+function resetGame(){
+  if(!confirm('إعادة اللعبة كاملة؟\nستُحذف جميع النقاط!')) return;
+  send({type:'host_reset_game'}); toast('تم إعادة اللعبة 🔄');
+}
+
 connect();
 
 // polling كل 5 ثواني للاعبين كـ fallback (لـ Render)

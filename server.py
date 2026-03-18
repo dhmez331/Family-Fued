@@ -279,6 +279,14 @@ async def ws_handler(request):
             elif t == "ping":
                 pass  # تجاهل الـ ping
 
+            elif t == "host_skip_fo":
+                # الهوست يختار يدوياً أي فريق يلعب
+                team_idx = m.get("team_idx", 0)
+                GS["fo_winner_idx"] = team_idx
+                GS["active_team"] = team_idx
+                GS.update({"phase": "playing", "strikes": 0})
+                await push()
+
             elif t == "get_players":
                 pl = list(PLAYERS.values())
                 await sx(ws, {"type": "players_update", "players": pl})
