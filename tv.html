@@ -151,10 +151,15 @@ const PHASE_AR = {
 let GS = {}, ws;
 let buzzTimer, strikeTimer;
 
+let _ping = null;
 function connect(){
   ws = new WebSocket(WS_URL);
-  ws.onopen  = () => ws.send(JSON.stringify({type:'tv_join'}));
-  ws.onclose = () => setTimeout(connect, 3000);
+  ws.onopen  = () => {
+    ws.send(JSON.stringify({type:'tv_join'}));
+    clearInterval(_ping);
+    _ping = setInterval(()=>{ if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:'ping'})); }, 25000);
+  };
+  ws.onclose = () => { clearInterval(_ping); setTimeout(connect, 3000); };
   ws.onerror = () => {};
   ws.onmessage = e => { try{ handle(JSON.parse(e.data)); }catch(err){ console.error(err); } };
 }

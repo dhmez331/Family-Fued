@@ -392,14 +392,18 @@ let GS = {}; // mirror of server state
 
 // ═══ WS ═══════════════════════════════════
 let ws;
+let _ping = null;
 function connect(){
   ws = new WebSocket(WS_URL);
   ws.onopen = () => {
     setConn(true);
     ws.send(JSON.stringify({type:'host_join'}));
-    syncToServer();
+    setTimeout(syncToServer, 500);
+    // Keepalive ping كل 25 ثانية عشان Render ما يقطع الاتصال
+    clearInterval(_ping);
+    _ping = setInterval(()=>{ if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:'ping'})); }, 25000);
   };
-  ws.onclose = () => { setConn(false); setTimeout(connect,3000); };
+  ws.onclose = () => { setConn(false); clearInterval(_ping); setTimeout(connect,3000); };
   ws.onerror = () => setConn(false);
   ws.onmessage = e => { try{ handleMsg(JSON.parse(e.data)); }catch{} };
 }
@@ -415,9 +419,14 @@ function syncToServer(){
   send({type:'host_set_theme', theme: CFG.theme||'classic'});
 }
 
+let _synced = false;
 function handleMsg(m){
-  if(m.type==='state'){ GS=m; renderGame(); }
+  if(m.type==='state'){
+    GS=m; renderGame();
+    if(!_synced){ _synced=true; setTimeout(syncToServer,200); }
+  }
   else if(m.type==='players_update'){ renderPlayers(m.players); }
+  else if(m.type==='request_sync'){ syncToServer(); }
 }
 
 // ═══ TABS ═══════════════════════════════════

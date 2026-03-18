@@ -127,6 +127,7 @@ buildTeams();
 
 let pendingJoin = null; // يحفظ بيانات اللاعب لو الاتصال لم يكن جاهزاً
 
+let _ping = null;
 function connect(){
   ws = new WebSocket(WS_URL);
   ws.onopen = () => {
@@ -136,9 +137,13 @@ function connect(){
       ws.send(JSON.stringify(pendingJoin));
       pendingJoin = null;
     }
+    // Keepalive
+    clearInterval(_ping);
+    _ping = setInterval(()=>{ if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:'ping'})); }, 25000);
   };
   ws.onclose = () => {
     document.getElementById('cd').className = 'cd err';
+    clearInterval(_ping);
     setTimeout(connect, 3000);
   };
   ws.onerror = () => document.getElementById('cd').className = 'cd err';

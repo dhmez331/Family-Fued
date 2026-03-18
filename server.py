@@ -273,6 +273,10 @@ async def ws_handler(request):
                 compute_fo_winner()
                 await push()
 
+            # ── Ping (keepalive) ──────────────────────────
+            elif t == "ping":
+                pass  # تجاهل الـ ping
+
             # ── Buzz من اللاعبين ──────────────────────────
             elif t == "buzz":
                 if not GS["fo_buzz_open"]: continue
