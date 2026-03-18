@@ -423,9 +423,11 @@ let _synced = false;
 function handleMsg(m){
   if(m.type==='state'){
     GS=m; renderGame();
+    // state يحتوي على players أيضاً
+    if(m.players) renderPlayers(m.players);
     if(!_synced){ _synced=true; setTimeout(syncToServer,200); }
   }
-  else if(m.type==='players_update'){ renderPlayers(m.players); }
+  else if(m.type==='players_update'){ renderPlayers(m.players||[]); }
   else if(m.type==='request_sync'){ syncToServer(); }
 }
 
@@ -891,6 +893,11 @@ function init(){
 }
 init();
 connect();
+
+// polling كل 5 ثواني للاعبين كـ fallback (لـ Render)
+setInterval(()=>{
+  send({type:'get_players'});
+}, 5000);
 </script>
 </body>
 </html>

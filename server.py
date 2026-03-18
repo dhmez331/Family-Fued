@@ -117,13 +117,15 @@ async def ws_handler(request):
                 color = GS["teams"][tidx]["color"]
                 tname = GS["teams"][tidx]["name"]
                 PLAYERS[wid] = {"name": name, "team": tname, "team_idx": tidx, "color": color}
+                print(f"[PLAYER_JOIN] name={name} team={tname} HOST_WS={'connected' if HOST_WS else 'NONE!'} clients={len(CLIENTS)}")
                 # أخبر اللاعب بالانضمام
                 await sx(ws, {"type": "joined", "name": name, "team": tname,
                               "color": color, "buzz_open": GS["fo_buzz_open"]})
-                # أخبر الهوست والـ TV
+                # أخبر الكل (broadcast) عشان نضمن وصول الرسالة
                 pl = list(PLAYERS.values())
-                await to_host({"type": "players_update", "players": pl})
-                await to_tv({"type": "players_update", "players": pl})
+                await to_all({"type": "players_update", "players": pl})
+                # أرسل state كامل للهوست والـ TV
+                await push()
 
             # ── بيانات الهوست ─────────────────────────────
             elif t == "host_set_questions":
@@ -276,6 +278,10 @@ async def ws_handler(request):
             # ── Ping (keepalive) ──────────────────────────
             elif t == "ping":
                 pass  # تجاهل الـ ping
+
+            elif t == "get_players":
+                pl = list(PLAYERS.values())
+                await sx(ws, {"type": "players_update", "players": pl})
 
             # ── Buzz من اللاعبين ──────────────────────────
             elif t == "buzz":
