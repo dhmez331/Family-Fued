@@ -279,6 +279,9 @@ input,select,textarea{font-family:'Cairo',sans-serif;outline:none}
 
       <!-- Phase Controls -->
       <div id="phase-controls"></div>
+
+      <!-- إعادة/إلغاء اللعبة -->
+      <div id="danger-zone-wrap"></div>
     </div>
 
     <!-- LEFT: sidebar -->
@@ -501,6 +504,9 @@ function renderGame(){
   // Controls
   renderPhaseControls();
 
+  // Reset/Cancel buttons
+  renderDangerZone();
+
   // Round buttons
   renderRoundBtns();
 }
@@ -565,6 +571,7 @@ function renderPhaseControls(){
       <div class="ctrl-title">ابدأ اللعبة</div>
       <div class="ctrl-btns">
         <button class="cb cb-gold" onclick="loadRound(0)">▶ ابدأ الجولة الأولى</button>
+        <button class="cb cb-gray" style="font-size:.76rem" onclick="if(confirm('مسح بيانات اللعبة السابقة؟')){send({type:'host_reset_game'});toast('تم المسح ✓')}">🗑 مسح الجولة السابقة</button>
       </div>
     </div>`;
   }
@@ -682,6 +689,36 @@ function renderPhaseControls(){
   }
 
   el.innerHTML = html;
+}
+
+// ─── Danger Zone: Cancel + Reset ───
+function renderDangerZone(){
+  const el = document.getElementById('danger-zone-wrap');
+  if(!el) return;
+  const phase = GS.phase;
+  if(!phase || phase === 'setup' || phase === 'game_over'){
+    el.innerHTML = ''; return;
+  }
+  el.innerHTML = `
+    <div style="background:rgba(229,57,53,.06);border:1px dashed rgba(229,57,53,.25);border-radius:10px;padding:12px;margin-top:8px">
+      <div style="font-size:.66rem;font-weight:700;color:rgba(239,83,80,.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:9px">⚠️ منطقة الخطر</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <button class="cb" style="background:rgba(229,57,53,.15);border:1px solid rgba(229,57,53,.4);color:#ef9a9a" onclick="cancelGame()">⏹ إلغاء الجولة</button>
+        <button class="cb" style="background:rgba(229,57,53,.15);border:1px solid rgba(229,57,53,.4);color:#ef9a9a" onclick="resetGame()">🔄 إعادة كاملة</button>
+      </div>
+    </div>`;
+}
+
+function cancelGame(){
+  if(!confirm('إلغاء الجولة الحالية والعودة للإعداد؟\n(النقاط تُحفظ)')) return;
+  send({type:'host_cancel_game'});
+  toast('تم إلغاء الجولة');
+}
+
+function resetGame(){
+  if(!confirm('إعادة اللعبة كاملة؟\nستُحذف جميع النقاط!')) return;
+  send({type:'host_reset_game'});
+  toast('تم إعادة اللعبة 🔄');
 }
 
 function renderRoundBtns(){
