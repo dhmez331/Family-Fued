@@ -166,6 +166,12 @@ input,select,textarea{font-family:'Cairo',sans-serif;outline:none}
 .cb-accent{background:var(--accent);color:#fff}
 .cb-gray{background:rgba(255,255,255,.1);color:var(--text)}
 .cb-orange{background:#e65100;color:#fff}
+.cb-danger{background:rgba(229,57,53,.15);border:1px solid rgba(229,57,53,.4);color:#ef9a9a}
+.cb-danger:hover{background:rgba(229,57,53,.3)}
+
+/* ─── Danger zone (cancel/reset) ─── */
+.danger-zone{background:rgba(229,57,53,.06);border:1px dashed rgba(229,57,53,.25);border-radius:10px;padding:12px;margin-bottom:10px}
+.dz-title{font-size:.66rem;font-weight:700;color:rgba(239,83,80,.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:9px}
 
 /* faceoff buzzer panel */
 .fo-panel{background:var(--card);border:1px solid var(--border-gold);border-radius:10px;padding:12px;margin-bottom:10px}
@@ -279,6 +285,9 @@ input,select,textarea{font-family:'Cairo',sans-serif;outline:none}
 
       <!-- Phase Controls -->
       <div id="phase-controls"></div>
+
+      <!-- ─── Danger Zone (cancel / reset) ─── -->
+      <div id="danger-zone-wrap"></div>
     </div>
 
     <!-- LEFT: sidebar -->
@@ -377,8 +386,8 @@ input,select,textarea{font-family:'Cairo',sans-serif;outline:none}
 //  CONFIG & DATA
 // ═══════════════════════════════════════════
 const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
-
 const TV_URL = location.origin + "/tv.html";
+
 let CFG = JSON.parse(localStorage.getItem('ff_cfg') || 'null') || {maxStrikes:3, soundEnabled:true, theme:'classic'};
 let QS  = JSON.parse(localStorage.getItem('ff_qs')  || 'null') || [
   {q:'سمّوا شيئاً تشربه في الصباح؟', answers:[{t:'قهوة',p:40},{t:'شاي',p:30},{t:'حليب',p:15},{t:'عصير',p:10},{t:'ماء',p:5}]},
@@ -388,7 +397,7 @@ let TEAMS = JSON.parse(localStorage.getItem('ff_teams') || 'null') || [
   {name:'الفريق الأحمر',color:'#E53935'},
 ];
 let selQ = 0;
-let GS = {}; // mirror of server state
+let GS = {};
 
 // ═══ WS ═══════════════════════════════════
 let ws;
@@ -397,7 +406,6 @@ function connect(){
   ws.onopen = () => {
     setConn(true);
     ws.send(JSON.stringify({type:'host_join'}));
-    syncToServer();
   };
   ws.onclose = () => { setConn(false); setTimeout(connect,3000); };
   ws.onerror = () => setConn(false);
@@ -412,11 +420,13 @@ function setConn(ok){
 function syncToServer(){
   send({type:"host_set_questions", questions: QS});
   send({type:'host_set_teams', teams: TEAMS});
+  send({type:'host_set_theme', theme: CFG.theme||'classic'});
 }
 
 function handleMsg(m){
   if(m.type==='state'){ GS=m; renderGame(); }
   else if(m.type==='players_update'){ renderPlayers(m.players); }
+  else if(m.type==='request_sync'){ syncToServer(); }
 }
 
 // ═══ TABS ═══════════════════════════════════
@@ -440,7 +450,6 @@ const PHASE_COLORS = {
 };
 
 function renderGame(){
-  // Show initial state even before server responds
   if(!GS.phase) {
     GS = {
       phase: 'setup', round: 0, bank: 0, strikes: 0,
@@ -489,6 +498,9 @@ function renderGame(){
   // Controls
   renderPhaseControls();
 
+  // Danger Zone
+  renderDangerZone();
+
   // Round buttons
   renderRoundBtns();
 }
@@ -510,7 +522,6 @@ function renderHostBoard(){
   if(!tiles.length){ el.innerHTML=''; return; }
   el.style.gridTemplateColumns = tiles.length<=3?'1fr':'1fr 1fr';
   const phase = GS.phase;
-  const isFO = phase==='faceoff';
   const b1idx = GS.fo_buzzer?.answer_idx;
   const b2idx = GS.fo_buzzer2?.answer_idx;
 
@@ -538,6 +549,24 @@ function renderStrikes(){
     `<div class="sd-x${i<cur?' lit':''}">✕</div>`).join('');
 }
 
+// ─── Danger Zone: Cancel + Reset ───
+function renderDangerZone(){
+  const el = document.getElementById('danger-zone-wrap');
+  const phase = GS.phase;
+  // إظهار الـ Danger Zone فقط إذا اللعبة بدأت (مو setup)
+  if(!phase || phase === 'setup'){
+    el.innerHTML = ''; return;
+  }
+  el.innerHTML = `
+    <div class="danger-zone">
+      <div class="dz-title">⚠️ منطقة الخطر</div>
+      <div class="ctrl-btns">
+        <button class="cb cb-danger" onclick="cancelGame()">⏹ إلغاء الجولة الحالية</button>
+        <button class="cb cb-danger" onclick="resetGame()">🔄 إعادة اللعبة كاملة</button>
+      </div>
+    </div>`;
+}
+
 function renderPhaseControls(){
   const el = document.getElementById('phase-controls');
   const phase = GS.phase;
@@ -558,7 +587,6 @@ function renderPhaseControls(){
   }
 
   else if(phase==='faceoff'){
-    // Buzz controls
     const buzzOpen = GS.fo_buzz_open;
     const b1 = GS.fo_buzzer, b2 = GS.fo_buzzer2;
     html = `
@@ -664,7 +692,7 @@ function renderPhaseControls(){
     html = `<div class="ctrl-section">
       <div class="ctrl-title" style="color:var(--gold)">🏆 انتهت اللعبة!</div>
       <div class="ctrl-btns">
-        <button class="cb cb-gold" onclick="send({type:'host_reset_game'})">🔄 لعبة جديدة</button>
+        <button class="cb cb-gold" onclick="resetGame()">🔄 لعبة جديدة</button>
       </div>
     </div>`;
   }
@@ -696,7 +724,6 @@ function renderPlayers(players){
 
 // ═══ GAME ACTIONS ═══════════════════════════
 function loadRound(r){
-  // نرسل الأسئلة مع الطلب كـ backup لو السيرفر ما استقبلها قبل
   send({type:'host_load_round', round:r, questions: QS});
 }
 function toggleQuestion(){ send({type:'host_toggle_question'}); }
@@ -709,9 +736,21 @@ function revealAll(){ send({type:'host_reveal_all'}); }
 function endRound(){ send({type:'host_end_round'}); }
 function stealResult(ok){ send({type:'host_steal_result', correct:ok}); }
 function doPlayPass(choice){ send({type:'host_playpass', choice}); }
-function skipFO(teamIdx){ send({type:'host_playpass', choice:'play'}); /* simplified */ }
+function skipFO(teamIdx){ send({type:'host_playpass', choice:'play'}); }
 function setFOAnswer(slot, tileIdx){
   send({type:'host_fo_answer', slot, tile_idx: tileIdx>=0?tileIdx:null});
+}
+
+// ─── Cancel & Reset ───
+function cancelGame(){
+  if(!confirm('إلغاء الجولة الحالية والعودة للإعداد؟\n(النقاط تُحفظ)')) return;
+  send({type:'host_cancel_game'});
+  toast('تم إلغاء الجولة');
+}
+function resetGame(){
+  if(!confirm('إعادة اللعبة كاملة؟\nستُحذف جميع النقاط!')) return;
+  send({type:'host_reset_game'});
+  toast('تم إعادة اللعبة 🔄');
 }
 
 // ═══ QUESTIONS ══════════════════════════════
@@ -801,9 +840,13 @@ function resetScores(){ if(!confirm('تصفير؟'))return; send({type:'host_res
 
 // ═══ SETTINGS ═══════════════════════════════
 function setTheme(name, btn){
-  CFG.theme=name; document.body.setAttribute('data-theme',name);
+  CFG.theme=name;
+  document.body.setAttribute('data-theme',name);
   document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); saveData();
+  btn.classList.add('active');
+  saveData();
+  // ← إرسال الثيم للسيرفر ليُبث لـ TV
+  send({type:'host_set_theme', theme:name});
 }
 function toggleCFG(k,el){ CFG[k]=!CFG[k]; el.classList.toggle('on',CFG[k]); saveData(); }
 function stepCFG(k,d,min,max){
@@ -871,10 +914,8 @@ function init(){
   if(QS.length) renderEditor(selQ);
   renderTeamsGrid();
   renderGame();
-  // apply settings UI
   const sv=document.getElementById('sv-maxStrikes'); if(sv) sv.textContent=CFG.maxStrikes;
   document.getElementById('tog-sounds').classList.toggle('on',CFG.soundEnabled);
-  // mark active theme btn
   document.querySelectorAll('.theme-btn').forEach(b=>{
     if(b.onclick?.toString().includes(`'${CFG.theme||'classic'}'`)) b.classList.add('active');
   });

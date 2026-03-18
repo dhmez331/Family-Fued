@@ -36,6 +36,7 @@ def fresh():
         "fo_winner_idx": None,
         "steal_team": None,
         "questions": [],
+        "theme": "classic",
     }
 
 GS = fresh()
@@ -95,6 +96,8 @@ async def ws_handler(request):
             if t == "host_join":
                 HOST_WS = ws
                 await sx(ws,{**GS,"type":"state","role":"host","players":list(PLAYERS.values())})
+                # طلب من الهوست يعيد إرسال البيانات
+                await sx(ws,{"type":"request_sync"})
 
             elif t == "tv_join":
                 TV_WS = ws
@@ -115,15 +118,18 @@ async def ws_handler(request):
 
             elif t == "host_set_questions":
                 GS["questions"] = m.get("questions",[])
-                await push()  # أخبر الهوست بالـ state الجديد
+                await push()
 
             elif t == "host_set_teams":
                 GS["teams"] = (m.get("teams") or GS["teams"])[:2]
                 await push()
 
+            elif t == "host_set_theme":
+                GS["theme"] = m.get("theme", "classic")
+                await push()
+
             elif t == "host_load_round":
                 ridx = m.get("round", GS["round"])
-                # لو الأسئلة أُرسلت مع الطلب، استخدمها
                 if m.get("questions"):
                     GS["questions"] = m["questions"]
                 if ridx >= len(GS["questions"]): continue
@@ -208,9 +214,27 @@ async def ws_handler(request):
                 new = fresh()
                 new["questions"] = GS["questions"]
                 new["teams"]     = GS["teams"]
+                new["theme"]     = GS.get("theme","classic")
                 new["scores"]    = [0,0]
                 GS.clear(); GS.update(new)
                 await push()
+                await to_all({"type":"game_reset"})
+
+            elif t == "host_cancel_game":
+                # إلغاء اللعبة والعودة للإعداد مع الاحتفاظ بالنقاط
+                GS.update({
+                    "phase": "setup",
+                    "board_tiles": [],
+                    "bank": 0,
+                    "strikes": 0,
+                    "fo_buzz_open": False,
+                    "fo_buzzer": None,
+                    "fo_buzzer2": None,
+                    "fo_winner_idx": None,
+                    "question_visible": False,
+                })
+                await push()
+                await to_all({"type":"game_cancelled"})
 
             elif t == "host_fo_answer":
                 slot = m.get("slot",1); idx = m.get("tile_idx")

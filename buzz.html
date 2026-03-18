@@ -60,6 +60,15 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:#fff;min-height:1
 .wb-name{font-size:1.25rem;font-weight:900;color:#81c784}
 .wb-team{font-size:.78rem;color:var(--muted);margin-top:2px}
 
+/* Game cancelled notice */
+.cancelled-notice{
+  width:100%;background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.25);
+  border-radius:12px;padding:12px 16px;display:none;text-align:center;
+}
+.cn-icon{font-size:1.8rem;margin-bottom:4px}
+.cn-txt{font-size:.88rem;color:#ef9a9a;font-weight:700}
+.cn-sub{font-size:.72rem;color:var(--muted);margin-top:3px}
+
 .cd{position:fixed;top:11px;left:11px;width:8px;height:8px;border-radius:50%;background:#555;transition:background .3s}
 .cd.on{background:#4caf50}.cd.err{background:var(--red)}
 </style>
@@ -92,6 +101,14 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:#fff;min-height:1
   <div class="status s-wait" id="status-badge">⏳ انتظر الهوست…</div>
   <button class="buzz-btn" id="buzz-btn" disabled onclick="doBuzz()">BUZZ!</button>
   <div class="buzz-hint" id="buzz-hint">الزر مغلق</div>
+
+  <!-- Game cancelled notice -->
+  <div class="cancelled-notice" id="cancelled-notice">
+    <div class="cn-icon">⏹</div>
+    <div class="cn-txt">تم إلغاء الجولة</div>
+    <div class="cn-sub">انتظر الهوست للجولة القادمة</div>
+  </div>
+
   <div class="winner-banner" id="winner-banner">
     <div class="wb-lbl">ضغط أولاً ✅</div>
     <div class="wb-name" id="wb-name">—</div>
@@ -110,7 +127,6 @@ let ws, myName='', myTeam='', myColor='', myTidx=0;
 let buzzOpen=false, iWon=false;
 let selTidx=0;
 
-// Build team buttons
 function buildTeams(){
   const el=document.getElementById('team-btns');
   el.innerHTML='';
@@ -125,13 +141,12 @@ function buildTeams(){
 }
 buildTeams();
 
-let pendingJoin = null; // يحفظ بيانات اللاعب لو الاتصال لم يكن جاهزاً
+let pendingJoin = null;
 
 function connect(){
   ws = new WebSocket(WS_URL);
   ws.onopen = () => {
     document.getElementById('cd').className = 'cd on';
-    // لو كان في join معلق، أرسله الآن
     if(pendingJoin){
       ws.send(JSON.stringify(pendingJoin));
       pendingJoin = null;
@@ -158,10 +173,10 @@ function join(){
   const joinMsg = {type:'player_join', name:myName, team_idx:myTidx};
 
   if(ws && ws.readyState === 1){
-    ws.send(JSON.stringify(joinMsg)); // متصل → أرسل فوراً
+    ws.send(JSON.stringify(joinMsg));
   } else {
-    pendingJoin = joinMsg; // غير متصل → احفظه للإرسال عند الاتصال
-    connect(); // حاول الاتصال
+    pendingJoin = joinMsg;
+    connect();
   }
   showBuzz();
 }
@@ -173,7 +188,6 @@ function showBuzz(){
   document.getElementById('p-name').textContent=myName;
   const pt=document.getElementById('p-team');
   pt.textContent=myTeam; pt.style.color=myColor;
-  document.getElementById('p-info'||'p-name').closest?.('.p-info')?.style?.setProperty('border-color',myColor+'55');
 }
 
 function doBuzz(){
@@ -183,15 +197,40 @@ function doBuzz(){
 }
 
 function handle(m){
-  if(m.type==='joined'){buzzOpen=m.buzz_open;if(m.buzz_winner)showWinner(m.buzz_winner);else updateState()}
-  else if(m.type==='buzz_opened'){buzzOpen=true;iWon=false;document.getElementById('winner-banner').style.display='none';updateState()}
-  else if(m.type==='buzz_closed'){buzzOpen=false;updateState()}
-  else if(m.type==='buzz_reset'){buzzOpen=false;iWon=false;document.getElementById('winner-banner').style.display='none';updateState()}
-  else if(m.type==='buzz_winner'){showWinner(m.player)}
-  else if(m.type==='buzz_winner2'){
-    // If I'm buzzer 2
-    if(m.player.name===myName&&m.player.team===myTeam) showWinner(m.player);
-    else showWinner(m.player);
+  if(m.type==='joined'){
+    buzzOpen=m.buzz_open;
+    if(m.buzz_winner) showWinner(m.buzz_winner);
+    else updateState();
+  }
+  else if(m.type==='buzz_opened'){
+    buzzOpen=true; iWon=false;
+    hideCancelledNotice();
+    document.getElementById('winner-banner').style.display='none';
+    updateState();
+  }
+  else if(m.type==='buzz_closed'){
+    buzzOpen=false; updateState();
+  }
+  else if(m.type==='buzz_reset'){
+    buzzOpen=false; iWon=false;
+    document.getElementById('winner-banner').style.display='none';
+    updateState();
+  }
+  else if(m.type==='buzz_winner'){ showWinner(m.player); }
+  else if(m.type==='buzz_winner2'){ showWinner(m.player); }
+  else if(m.type==='game_reset'){
+    // إعادة ضبط كل شيء
+    buzzOpen=false; iWon=false;
+    document.getElementById('winner-banner').style.display='none';
+    hideCancelledNotice();
+    updateState();
+  }
+  else if(m.type==='game_cancelled'){
+    // إلغاء الجولة
+    buzzOpen=false; iWon=false;
+    document.getElementById('winner-banner').style.display='none';
+    showCancelledNotice();
+    updateState();
   }
 }
 
@@ -200,12 +239,12 @@ function updateState(){
   const badge=document.getElementById('status-badge');
   const hint=document.getElementById('buzz-hint');
   if(buzzOpen&&!iWon){
-    btn.disabled=false;btn.classList.add('idle');btn.classList.remove('won');
-    badge.className='status s-open';badge.textContent='🔴 اضغط الآن!';
+    btn.disabled=false; btn.classList.add('idle'); btn.classList.remove('won');
+    badge.className='status s-open'; badge.textContent='🔴 اضغط الآن!';
     hint.textContent='أول ضغطة تفوز!';
   } else if(!iWon){
-    btn.disabled=true;btn.classList.remove('idle','won');
-    badge.className='status s-wait';badge.textContent='⏳ انتظر الهوست…';
+    btn.disabled=true; btn.classList.remove('idle','won');
+    badge.className='status s-wait'; badge.textContent='⏳ انتظر الهوست…';
     hint.textContent='الزر مغلق';
   }
 }
@@ -217,15 +256,15 @@ function showWinner(w){
   const badge=document.getElementById('status-badge');
   const hint=document.getElementById('buzz-hint');
   const banner=document.getElementById('winner-banner');
-  btn.disabled=true;btn.classList.remove('idle');
+  btn.disabled=true; btn.classList.remove('idle');
   if(iWon){
     btn.classList.add('won');
-    badge.className='status s-won';badge.textContent='🏆 أنت ضغطت أول!';
+    badge.className='status s-won'; badge.textContent='🏆 أنت ضغطت أول!';
     hint.textContent='أعطِ إجابتك للهوست!';
-    if(navigator.vibrate)navigator.vibrate([100,50,200]);
+    if(navigator.vibrate) navigator.vibrate([100,50,200]);
   } else {
     btn.classList.remove('won');
-    badge.className='status s-lost';badge.textContent=`${w.name} ضغط أول`;
+    badge.className='status s-lost'; badge.textContent=`${w.name} ضغط أول`;
     hint.textContent='';
   }
   document.getElementById('wb-name').textContent=w.name;
@@ -233,6 +272,14 @@ function showWinner(w){
   document.getElementById('wb-team').textContent=w.team;
   banner.style.display='';
 }
+
+function showCancelledNotice(){
+  document.getElementById('cancelled-notice').style.display='';
+}
+function hideCancelledNotice(){
+  document.getElementById('cancelled-notice').style.display='none';
+}
+
 connect();
 </script>
 </body>
