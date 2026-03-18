@@ -3,924 +3,373 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Family Feud – Host</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<title>Family Feud – TV</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&family=Tajawal:wght@700;900&display=swap" rel="stylesheet">
 <style>
 /* ═══ THEMES ═══ */
-body[data-theme="classic"]{--bg:#00061a;--surface:#010d2e;--card:#001855;--card2:#002580;--border:rgba(255,255,255,.08);--border-gold:rgba(255,204,0,.25);--text:#fff;--muted:rgba(255,255,255,.45);--gold:#FFCC00;--gold-dim:#B38F00;--red:#E53935;--green:#2E7D32;--accent:#7C6AFA}
-body[data-theme="day"]{--bg:#f0f4ff;--surface:#e4eaf8;--card:#fff;--card2:#dbe4ff;--border:rgba(0,0,0,.1);--border-gold:rgba(180,130,0,.3);--text:#111;--muted:#666;--gold:#c49a00;--gold-dim:#8a6d00;--red:#d32f2f;--green:#2e7d32;--accent:#5c6bc0}
-body[data-theme="canva"]{--bg:#1a0533;--surface:#2a0845;--card:#3d0d60;--card2:#5512a0;--border:rgba(255,255,255,.1);--border-gold:rgba(255,100,200,.3);--text:#fff;--muted:rgba(255,255,255,.5);--gold:#ff6ec7;--gold-dim:#cc4a9e;--red:#ff3864;--green:#00d97e;--accent:#00c8ff}
-body[data-theme="midnight"]{--bg:#000;--surface:#0a0a0a;--card:#111;--card2:#1a1a1a;--border:rgba(255,255,255,.07);--border-gold:rgba(255,204,0,.2);--text:#f5f5f5;--muted:rgba(255,255,255,.4);--gold:#FFD700;--gold-dim:#B8860B;--red:#ff1744;--green:#00e676;--accent:#e040fb}
+body[data-theme="classic"]{--bg:#00061a;--board:#001033;--tile-h:linear-gradient(160deg,#1a3eb5,#0a1f75);--tile-r:linear-gradient(160deg,#1b5e20,#0d3d11);--gold:#FFCC00;--gold-dim:#B38F00;--gold-glow:rgba(255,204,0,.4);--red:#E53935;--text:#fff;--muted:rgba(255,255,255,.5);--card:#001855;--bboard:#FFCC00}
+body[data-theme="day"]{--bg:#e8f0fe;--board:#fff;--tile-h:linear-gradient(160deg,#1565c0,#0d47a1);--tile-r:linear-gradient(160deg,#2e7d32,#1b5e20);--gold:#c49a00;--gold-dim:#8a6d00;--gold-glow:rgba(196,154,0,.4);--red:#d32f2f;--text:#111;--muted:#555;--card:#fff;--bboard:#c49a00}
+body[data-theme="canva"]{--bg:#1a0533;--board:#2a0845;--tile-h:linear-gradient(160deg,#6200ea,#3d0d60);--tile-r:linear-gradient(160deg,#00897b,#004d40);--gold:#ff6ec7;--gold-dim:#cc4a9e;--gold-glow:rgba(255,110,199,.4);--red:#ff3864;--text:#fff;--muted:rgba(255,255,255,.55);--card:#3d0d60;--bboard:#ff6ec7}
+body[data-theme="midnight"]{--bg:#000;--board:#0a0a0a;--tile-h:linear-gradient(160deg,#1a1a2e,#0f0f1e);--tile-r:linear-gradient(160deg,#1a3a1a,#0d200d);--gold:#FFD700;--gold-dim:#B8860B;--gold-glow:rgba(255,215,0,.4);--red:#ff1744;--text:#f5f5f5;--muted:rgba(255,255,255,.45);--card:#111;--bboard:#FFD700}
 
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .4s,color .4s}
-button{font-family:'Cairo',sans-serif;cursor:pointer;border:none;outline:none;transition:all .18s}
-input,select,textarea{font-family:'Cairo',sans-serif;outline:none}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);transition:background .4s}
 
-/* layout */
-.topbar{background:var(--card);border-bottom:2px solid var(--gold);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;position:sticky;top:0;z-index:60}
-.logo{display:flex;align-items:center;gap:8px}
-.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-dim));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
-.logo-name{font-size:1rem;font-weight:900;color:var(--gold)}
-.logo-sub{font-size:.65rem;color:var(--muted)}
-.topbar-right{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.wrap{display:flex;flex-direction:column;height:100vh;padding:clamp(8px,2vh,18px);gap:clamp(6px,1.5vh,12px)}
 
-.tabs{display:flex;gap:3px;padding:11px 18px 0;background:var(--card);border-bottom:1px solid var(--border)}
-.tab{padding:8px 16px;border-radius:9px 9px 0 0;font-size:.82rem;font-weight:700;color:var(--muted);background:transparent;border:1px solid transparent;border-bottom:none;transition:all .2s}
-.tab.on{color:var(--gold);background:var(--surface);border-color:var(--border)}
-.tab:hover:not(.on){color:var(--text)}
-
-.body{flex:1;padding:18px;max-width:1200px;width:100%;margin:0 auto}
-
-/* buttons */
-.btn{padding:9px 15px;border-radius:8px;font-size:.82rem;font-weight:700}
-.btn:hover{transform:translateY(-2px)}
-.btn:active{transform:translateY(0)}
-.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#000;box-shadow:0 3px 12px rgba(255,204,0,.3)}
-.btn-red{background:rgba(229,57,53,.2);border:1px solid rgba(229,57,53,.35);color:#ef9a9a}
-.btn-red:hover{background:rgba(229,57,53,.35)}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
-.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
-.btn-accent{background:var(--accent);color:#fff}
-.btn-green{background:var(--green);color:#fff}
-.btn-sm{padding:6px 12px;font-size:.76rem}
-
-/* cards */
-.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px}
-.card-title{font-size:.72rem;font-weight:700;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
-
-/* fields */
-.field{margin-bottom:11px}
-.field label{display:block;font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
-.einput{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.92rem;padding:9px 12px;direction:rtl;transition:border-color .2s}
-.einput:focus{border-color:var(--accent);background:rgba(124,106,250,.04)}
-.pts-inp{background:rgba(255,204,0,.06);border-color:rgba(255,204,0,.22);color:var(--gold);text-align:center;font-weight:700;width:76px}
-.pts-inp:focus{border-color:var(--gold)}
-
-/* questions sidebar */
-.ql{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
-.ql-side{width:240px;flex-shrink:0}
-.ql-main{flex:1;min-width:260px}
-.q-items{display:flex;flex-direction:column;gap:5px}
-.q-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:6px;cursor:pointer;transition:all .2s}
-.q-item:hover{border-color:var(--accent)}
-.q-item.sel{border-color:var(--gold);background:rgba(255,204,0,.05)}
-.qi-n{width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;color:var(--gold);flex-shrink:0}
-.q-item.sel .qi-n{background:var(--gold);color:#000}
-.qi-t{flex:1;font-size:.76rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.q-item.sel .qi-t{color:var(--text)}
-.qi-d{width:19px;height:19px;border-radius:5px;background:transparent;border:1px solid rgba(239,83,80,.2);color:rgba(239,83,80,.4);font-size:.68rem;display:flex;align-items:center;justify-content:center}
-.qi-d:hover{background:rgba(239,83,80,.14);color:#ef5350;border-color:#ef5350}
-.add-q{width:100%;margin-top:6px;background:rgba(124,106,250,.12);border:1px dashed rgba(124,106,250,.35);color:var(--accent);border-radius:8px;padding:7px;font-size:.8rem;font-weight:700}
-.add-q:hover{background:rgba(124,106,250,.22)}
-
-.ans-rows{display:flex;flex-direction:column;gap:6px}
-.ans-row{display:grid;grid-template-columns:24px 1fr 76px 28px;gap:5px;align-items:center}
-.ans-n{width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;color:var(--gold)}
-.ans-del{width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(239,83,80,.2);color:rgba(239,83,80,.4);font-size:.82rem;display:flex;align-items:center;justify-content:center}
-.ans-del:hover{background:rgba(239,83,80,.14);color:#ef5350;border-color:#ef5350}
-.add-ans{width:100%;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);color:var(--muted);border-radius:7px;padding:7px;font-size:.76rem;margin-top:4px}
-.add-ans:hover{border-color:rgba(255,255,255,.25);color:var(--text)}
-.pts-bar{display:flex;align-items:center;justify-content:space-between;padding-top:9px;border-top:1px solid var(--border);margin-top:4px;font-size:.76rem}
-.pv{font-weight:900;font-size:1rem}
-.pv.ok{color:#66bb6a}.pv.warn{color:#ffa726}.pv.over{color:#ef5350}
-.save-btn{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#000;font-size:.92rem;font-weight:900;padding:10px;border-radius:8px;margin-top:4px}
-.save-btn:hover{box-shadow:0 6px 18px rgba(255,204,0,.35);transform:translateY(-2px)}
-
-/* settings */
-.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
-.sc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
-.sc-t{font-size:.76rem;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:12px}
-.srow{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:10px}
-.srow:last-child{margin-bottom:0}
-.srl{font-size:.84rem}
-.srs{font-size:.67rem;color:var(--muted);margin-top:1px}
-.tog{width:38px;height:21px;background:rgba(255,255,255,.1);border-radius:11px;position:relative;cursor:pointer;transition:background .3s;flex-shrink:0}
-.tog.on{background:var(--accent)}
-.tog::after{content:'';position:absolute;top:3px;right:3px;width:15px;height:15px;background:#fff;border-radius:50%;transition:transform .3s}
-.tog.on::after{transform:translateX(-17px)}
-.stepper{display:flex;align-items:center;gap:6px}
-.st-btn{width:25px;height:25px;border-radius:6px;background:rgba(255,255,255,.07);color:var(--text);font-size:1rem;display:flex;align-items:center;justify-content:center}
-.st-btn:hover{background:rgba(255,255,255,.15)}
-.st-val{width:32px;text-align:center;font-weight:900;color:var(--gold)}
-
-/* teams tab */
-.teams-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.team-editor{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
-.te-head{display:flex;align-items:center;gap:8px;margin-bottom:11px}
-.te-color{width:32px;height:32px;border-radius:8px;border:2px solid rgba(255,255,255,.2);cursor:pointer}
-.te-name{flex:1;background:transparent;border:none;color:var(--text);font-size:.96rem;font-weight:900;border-bottom:1px solid transparent;transition:border-color .2s;direction:rtl;padding:2px 0}
-.te-name:focus{border-color:var(--gold)}
-
-/* ═══ GAME PANEL ═══ */
-#tab-game{display:block}
-.game-layout{display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start}
-
-/* phase badge */
-.phase-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:.78rem;font-weight:700;border:1px solid;margin-bottom:12px}
-
-/* scoreboard mini */
-.score-mini{display:flex;gap:8px;margin-bottom:10px}
-.sm-box{flex:1;background:var(--card2);border-radius:8px;padding:10px;text-align:center;border:2px solid transparent;transition:all .3s}
-.sm-box.active{border-color:var(--gold)}
-.sm-name{font-size:.76rem;font-weight:700;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sm-score{font-size:1.8rem;font-weight:900}
-.bank-mini{background:#000;border:2px solid var(--gold);border-radius:8px;padding:8px 14px;text-align:center;box-shadow:inset 0 0 12px rgba(255,204,0,.08)}
-.bank-lbl{font-size:.62rem;color:var(--gold);letter-spacing:2px}
-.bank-val{font-size:1.8rem;font-weight:900}
-
-/* question display */
-.q-display{background:var(--card2);border:2px solid var(--gold);border-radius:10px;padding:12px 16px;margin-bottom:10px;position:relative}
-.q-text{font-size:1.1rem;font-weight:700;line-height:1.4}
-.q-hint{font-size:.7rem;color:var(--muted);margin-top:4px}
-
-/* answer tiles (host sees all revealed) */
-.host-board{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
-.host-tile{
-  background:var(--card2);border:1.5px solid var(--border);border-radius:8px;
-  padding:9px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:all .2s;
+/* SCORES */
+.scores{display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,18px)}
+.score-box{
+  flex:1;max-width:280px;
+  background:linear-gradient(160deg,#001855,#00061a);
+  border:3px solid rgba(255,255,255,.1);border-radius:14px;
+  padding:clamp(8px,2vh,14px) clamp(10px,2vw,16px);text-align:center;transition:all .35s;
 }
-.host-tile:hover{border-color:var(--gold);background:rgba(255,204,0,.06)}
-.host-tile.revealed{background:rgba(46,125,50,.15);border-color:#3d9140;cursor:default}
-.host-tile.fo-sel{border-color:#ff9800;background:rgba(255,152,0,.12)}
-.ht-n{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:900;color:var(--gold);flex-shrink:0}
-.host-tile.revealed .ht-n{background:rgba(61,145,64,.25)}
-.ht-text{flex:1;font-size:.92rem;font-weight:700}
-.ht-pts{background:var(--gold);color:#000;font-weight:900;font-size:.86rem;padding:2px 9px;border-radius:14px;flex-shrink:0}
+.score-box.active{border-color:var(--gold);box-shadow:0 0 28px var(--gold-glow)}
+.sb-bar{height:4px;border-radius:2px;margin-bottom:7px}
+.sb-name{font-size:clamp(.7rem,1.8vw,1rem);font-weight:700;color:rgba(255,204,0,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-score{font-size:clamp(1.8rem,5vw,3rem);font-weight:900;line-height:1.1}
+.bank{background:#000;border:3px solid var(--gold);border-radius:14px;padding:clamp(6px,1.5vh,12px) clamp(14px,3vw,26px);text-align:center;box-shadow:inset 0 0 18px rgba(255,204,0,.1),0 0 22px var(--gold-glow);flex-shrink:0}
+.bank-lbl{color:var(--gold);font-size:clamp(.55rem,1.2vw,.75rem);font-weight:700;letter-spacing:3px}
+.bank-val{font-size:clamp(2rem,5vw,3.2rem);font-weight:900;line-height:1}
 
-/* strikes display */
-.strikes-display{display:flex;gap:7px;margin-bottom:10px}
-.sd-x{width:42px;height:42px;border-radius:9px;border:2px solid rgba(220,50,50,.2);background:rgba(200,0,0,.06);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:900;color:transparent;transition:all .3s}
-.sd-x.lit{color:var(--red);border-color:var(--red);background:rgba(229,57,53,.18);text-shadow:0 0 14px rgba(255,0,0,.7)}
+/* QUESTION */
+.q-wrap{
+  background:linear-gradient(135deg,var(--gold-dim),var(--gold),var(--gold-dim));
+  color:#000;font-weight:900;font-size:clamp(.9rem,2.5vw,1.6rem);
+  padding:clamp(8px,2vh,14px) clamp(12px,3vw,26px);border-radius:12px;text-align:center;
+  box-shadow:0 6px 24px var(--gold-glow);transition:all .4s;
+}
+.q-wrap.hidden{background:var(--card);color:var(--muted);border:2px solid rgba(255,255,255,.08);box-shadow:none}
 
-/* control panels */
-.ctrl-section{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px}
-.ctrl-title{font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:9px}
-.ctrl-btns{display:flex;gap:7px;flex-wrap:wrap}
-.cb{padding:9px 14px;border-radius:8px;font-size:.82rem;font-weight:700}
-.cb:hover{transform:translateY(-2px)}
-.cb-red{background:var(--red);color:#fff}
-.cb-green{background:var(--green);color:#fff}
-.cb-gold{background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#000}
-.cb-blue{background:var(--card2);color:var(--text);border:1px solid var(--border)}
-.cb-accent{background:var(--accent);color:#fff}
-.cb-gray{background:rgba(255,255,255,.1);color:var(--text)}
-.cb-orange{background:#e65100;color:#fff}
-.cb-danger{background:rgba(229,57,53,.15);border:1px solid rgba(229,57,53,.4);color:#ef9a9a}
-.cb-danger:hover{background:rgba(229,57,53,.3)}
+/* BOARD */
+.board-outer{flex:1;background:var(--board);padding:clamp(8px,2vh,14px);border:3px solid var(--bboard);border-radius:16px;box-shadow:inset 0 0 28px rgba(0,0,0,.5);display:flex;align-items:center}
+.board{display:grid;grid-template-columns:1fr 1fr;gap:clamp(5px,1.2vh,9px);width:100%}
+.board.col1{grid-template-columns:1fr}
 
-/* ─── Danger zone (cancel/reset) ─── */
-.danger-zone{background:rgba(229,57,53,.06);border:1px dashed rgba(229,57,53,.25);border-radius:10px;padding:12px;margin-bottom:10px}
-.dz-title{font-size:.66rem;font-weight:700;color:rgba(239,83,80,.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:9px}
+/* TILES */
+.tw{perspective:1000px;height:clamp(48px,9vh,80px)}
+.tile{width:100%;height:100%;position:relative;transition:transform .6s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.tile.flip{transform:rotateX(180deg)}
+.tf,.tb{position:absolute;width:100%;height:100%;backface-visibility:hidden;display:flex;align-items:center;border-radius:9px;border:2px solid rgba(0,0,0,.3);overflow:hidden}
+.tf{background:var(--tile-h);justify-content:center}
+.tn{width:clamp(32px,6vw,48px);height:clamp(32px,6vw,48px);border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:clamp(.9rem,2vw,1.4rem);font-weight:900}
+.tb{background:var(--tile-r);transform:rotateX(180deg);padding:0 clamp(8px,2vw,14px)}
+.tt{flex:1;font-size:clamp(.8rem,2vw,1.2rem);font-weight:700;text-align:center;padding:0 4px}
+.tp{background:#000;color:var(--gold);font-size:clamp(.8rem,1.8vw,1.1rem);font-weight:900;padding:3px clamp(6px,1.5vw,12px);border:1.5px solid var(--gold);border-radius:6px;flex-shrink:0}
 
-/* faceoff buzzer panel */
-.fo-panel{background:var(--card);border:1px solid var(--border-gold);border-radius:10px;padding:12px;margin-bottom:10px}
-.fo-slot{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:7px}
-.fo-slot:last-child{margin-bottom:0}
-.fo-slot-name{font-size:.88rem;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.fo-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.fo-ans-btns{display:flex;flex-wrap:wrap;gap:5px}
-.fo-ans-btn{padding:5px 10px;border-radius:6px;font-size:.76rem;font-weight:700;background:rgba(255,255,255,.07);color:var(--text);border:1px solid var(--border)}
-.fo-ans-btn:hover{border-color:var(--gold);color:var(--gold)}
-.fo-ans-btn.wrong{background:rgba(229,57,53,.15);border-color:var(--red);color:#ef9a9a}
-.fo-ans-btn.sel{background:rgba(255,204,0,.15);border-color:var(--gold);color:var(--gold)}
+/* STRIKES */
+.strikes{display:flex;gap:clamp(6px,1.5vw,12px);justify-content:center}
+.sx{width:clamp(38px,7vw,58px);height:clamp(38px,7vw,58px);border-radius:11px;border:2px solid rgba(220,50,50,.2);background:rgba(200,0,0,.06);display:flex;align-items:center;justify-content:center;font-size:clamp(1.2rem,3vw,1.9rem);font-weight:900;color:transparent;transition:all .3s}
+.sx.lit{color:var(--red);border-color:var(--red);background:rgba(229,57,53,.2);text-shadow:0 0 18px rgba(255,0,0,.8);animation:sxB .5s ease}
+@keyframes sxB{0%,100%{transform:scale(1)}40%{transform:scale(1.5) rotate(-12deg)}70%{transform:scale(.9)}}
 
-/* players panel */
-.players-panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px}
-.players-list{display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto;margin-top:7px}
-.pl-item{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.03);border-radius:6px;padding:6px 8px}
-.pl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.pl-name{font-size:.82rem;font-weight:700;flex:1}
-.pl-team{font-size:.68rem;color:var(--muted)}
+/* BUZZ BANNER */
+.buzz-banner{position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,.92);backdrop-filter:blur(10px);padding:clamp(14px,4vh,28px);text-align:center;transform:translateY(-120%);transition:transform .5s cubic-bezier(.34,1.56,.64,1);z-index:50;border-bottom:3px solid var(--gold)}
+.buzz-banner.show{transform:translateY(0)}
+.bb-lbl{font-size:clamp(.6rem,1.5vw,.85rem);color:var(--muted);letter-spacing:3px;margin-bottom:6px}
+.bb-name{font-size:clamp(1.8rem,5vw,3.5rem);font-weight:900;color:var(--gold);text-shadow:0 0 30px var(--gold-glow)}
+.bb-team{font-size:clamp(.8rem,2vw,1.1rem);color:var(--muted);margin-top:4px}
 
-/* theme selector */
-.theme-btns{display:flex;gap:7px;flex-wrap:wrap}
-.theme-btn{padding:8px 14px;border-radius:8px;font-size:.8rem;font-weight:700;border:2px solid transparent;transition:all .2s}
-.theme-btn:hover{transform:translateY(-2px)}
-.theme-btn.active{border-color:#fff}
+/* STRIKE OVERLAY */
+.stk-ov{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;gap:clamp(16px,4vw,36px);z-index:100;opacity:0;pointer-events:none;transition:opacity .25s}
+.stk-ov.on{opacity:1}
+.big-x{font-size:min(16rem,42vw);font-weight:900;color:var(--red);text-shadow:0 0 80px rgba(255,0,0,.9);animation:bxP .6s cubic-bezier(.34,1.56,.64,1);line-height:1}
+@keyframes bxP{0%{transform:scale(0) rotate(-60deg)}60%{transform:scale(1.15) rotate(8deg)}100%{transform:scale(1)}}
 
-/* conn status */
-.conn{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--muted)}
-.conn-dot{width:7px;height:7px;border-radius:50%;background:#555}
-.conn-dot.on{background:#4caf50}
-.conn-dot.err{background:var(--red)}
+/* ROUND WINNER */
+.win-ov{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(0,20,70,.97),rgba(0,0,0,.97));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:200;opacity:0;pointer-events:none;transition:opacity .3s;cursor:pointer}
+.win-ov.on{opacity:1;pointer-events:all}
+.win-trophy{font-size:clamp(3rem,8vw,6rem);animation:tF 1s ease infinite}
+@keyframes tF{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.win-title{font-size:clamp(2rem,6vw,4rem);font-weight:900;color:var(--gold);text-shadow:0 0 40px var(--gold-glow);text-align:center}
+.win-tap{font-size:clamp(.8rem,1.8vw,1rem);color:var(--muted);margin-top:6px}
 
-/* toast */
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--card);border:1px solid rgba(102,187,106,.35);border-radius:9px;padding:8px 18px;font-size:.82rem;color:#66bb6a;font-weight:700;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none}
-.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.err{border-color:rgba(239,83,80,.35);color:#ef5350}
+/* GAME OVER */
+.go-ov{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(0,10,40,.98),#000);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:300;opacity:0;pointer-events:none;transition:opacity .4s}
+.go-ov.on{opacity:1}
+.go-t{font-family:'Tajawal',sans-serif;font-size:clamp(3rem,9vw,7rem);font-weight:900;color:var(--gold);text-shadow:0 0 60px var(--gold-glow)}
+.go-scores{display:flex;gap:clamp(14px,4vw,30px);flex-wrap:wrap;justify-content:center}
+.go-item{text-align:center}
+.go-name{font-size:clamp(.8rem,2vw,1.1rem);color:var(--muted)}
+.go-pts{font-size:clamp(2.5rem,6vw,4rem);font-weight:900}
 
-/* share box */
-.share-box{background:rgba(255,204,0,.06);border:1px dashed var(--border-gold);border-radius:8px;padding:9px 13px;margin-bottom:10px}
-.share-url{font-size:.82rem;color:var(--gold);font-weight:700;word-break:break-all}
+/* PHASE */
+.phase-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);padding:5px;text-align:center;font-size:clamp(.6rem,1.5vw,.8rem);color:var(--muted);letter-spacing:2px}
 
-@media(max-width:700px){.game-layout{grid-template-columns:1fr}.host-board{grid-template-columns:1fr}.teams-grid{grid-template-columns:1fr}.ql-side{width:100%}}
+/* CONFETTI */
+.cf{position:fixed;inset:0;pointer-events:none;z-index:299}
+.cp{position:absolute;animation:cfF linear forwards}
+@keyframes cfF{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(115vh) rotate(800deg);opacity:0}}
 </style>
 </head>
 <body data-theme="classic">
 
-<div class="topbar">
-  <div class="logo">
-    <div class="logo-icon">🎯</div>
-    <div><div class="logo-name">Family Feud</div><div class="logo-sub">لوحة الهوست</div></div>
-  </div>
-  <div class="topbar-right">
-    <div class="conn"><div class="conn-dot" id="conn-dot"></div><span id="conn-lbl">غير متصل</span></div>
-    <button class="btn btn-ghost btn-sm" onclick="importJSON()">📥</button>
-    <button class="btn btn-ghost btn-sm" onclick="exportJSON()">📤</button>
-    <button class="btn btn-gold btn-sm" onclick="openTV()">📺 TV</button>
-  </div>
+<div class="wrap">
+  <div class="scores" id="scores"></div>
+  <div class="q-wrap hidden" id="q-wrap">Family Feud</div>
+  <div class="board-outer"><div class="board" id="board"></div></div>
+  <div class="strikes" id="strikes"></div>
 </div>
 
-<div class="tabs">
-  <button class="tab on"  onclick="switchTab('game',this)">🎮 اللعبة</button>
-  <button class="tab"     onclick="switchTab('questions',this)">📋 الأسئلة</button>
-  <button class="tab"     onclick="switchTab('teams',this)">👥 الفرق</button>
-  <button class="tab"     onclick="switchTab('settings',this)">⚙️ الإعدادات</button>
+<!-- Buzz banner -->
+<div class="buzz-banner" id="buzz-banner">
+  <div class="bb-lbl">ضغط الزر أولاً ✅</div>
+  <div class="bb-name" id="bb-name">—</div>
+  <div class="bb-team" id="bb-team">—</div>
 </div>
 
-<div class="body">
-
-<!-- ═══ TAB: GAME ═══ -->
-<div id="tab-game">
-  <div class="share-box">
-    <div style="font-size:.66rem;color:var(--muted);margin-bottom:3px">📱 رابط اللاعبين</div>
-    <div class="share-url" id="share-url">—</div>
-    <button class="btn btn-ghost btn-sm" style="margin-top:5px" onclick="copyURL()">نسخ الرابط</button>
-  </div>
-
-  <div class="game-layout">
-    <!-- RIGHT: main controls -->
-    <div>
-      <!-- Phase + Scores -->
-      <div id="phase-badge" class="phase-badge" style="background:rgba(255,204,0,.1);border-color:rgba(255,204,0,.3);color:var(--gold)">
-        <span>⏳</span><span id="phase-txt">الإعداد</span>
-      </div>
-      <div class="score-mini" id="score-mini"></div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-        <div class="bank-mini" style="flex:1">
-          <div class="bank-lbl">البنك</div>
-          <div class="bank-val" id="bank-val">0</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-size:.66rem;color:var(--muted)">الجولة</div>
-          <div style="font-size:1.2rem;font-weight:900" id="round-disp">—</div>
-        </div>
-      </div>
-
-      <!-- Question -->
-      <div class="q-display" id="q-display" style="display:none">
-        <div class="q-text" id="q-text">—</div>
-        <div class="q-hint" id="q-visibility-hint"></div>
-        <div style="margin-top:8px;display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="toggleQuestion()" id="toggle-q-btn">👁 إظهار للجمهور</button>
-        </div>
-      </div>
-
-      <!-- Host Board (all answers visible) -->
-      <div class="host-board" id="host-board"></div>
-
-      <!-- Strikes -->
-      <div class="strikes-display" id="strikes-display"></div>
-
-      <!-- Phase Controls -->
-      <div id="phase-controls"></div>
-
-      <!-- ─── Danger Zone (cancel / reset) ─── -->
-      <div id="danger-zone-wrap"></div>
-    </div>
-
-    <!-- LEFT: sidebar -->
-    <div>
-      <!-- Players connected -->
-      <div class="players-panel">
-        <div class="ctrl-title">المتصلون (<span id="pl-count">0</span>)</div>
-        <div class="players-list" id="players-list">
-          <div style="font-size:.78rem;color:var(--muted);text-align:center;padding:10px">لا يوجد لاعبون</div>
-        </div>
-      </div>
-
-      <!-- Round selector -->
-      <div class="ctrl-section" style="margin-top:10px">
-        <div class="ctrl-title">اختر الجولة</div>
-        <div id="round-btns" style="display:flex;flex-wrap:wrap;gap:5px"></div>
-      </div>
-    </div>
-  </div>
+<!-- Strike overlay -->
+<div class="stk-ov" id="stk-ov">
+  <div id="stk-wrap" style="display:flex;gap:32px"></div>
 </div>
 
-<!-- ═══ TAB: QUESTIONS ═══ -->
-<div id="tab-questions" style="display:none">
-  <div class="ql">
-    <div class="ql-side">
-      <div style="font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">
-        الأسئلة (<span id="q-count">0</span>)
-      </div>
-      <div class="q-items" id="q-items"></div>
-      <button class="add-q" onclick="addQ()">＋ سؤال جديد</button>
-    </div>
-    <div class="ql-main" id="q-editor">
-      <div style="height:180px;display:flex;align-items:center;justify-content:center;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:10px">
-        اختر سؤالاً أو أنشئ سؤالاً جديداً 👈
-      </div>
-    </div>
-  </div>
+<!-- Round winner -->
+<div class="win-ov" id="win-ov" onclick="this.classList.remove('on')">
+  <div class="win-trophy">🏆</div>
+  <div class="win-title" id="win-title">الفائز!</div>
+  <div class="win-tap">اضغط للمتابعة</div>
 </div>
 
-<!-- ═══ TAB: TEAMS ═══ -->
-<div id="tab-teams" style="display:none">
-  <div class="teams-grid" id="teams-grid"></div>
-  <div style="margin-top:12px;display:flex;gap:8px">
-    <button class="btn btn-gold" onclick="saveTeams()">💾 حفظ الفرق</button>
-    <button class="btn btn-red btn-sm" onclick="resetScores()">تصفير النقاط</button>
-  </div>
+<!-- Game Over -->
+<div class="go-ov" id="go-ov">
+  <div class="go-t">🏆</div>
+  <div class="go-t" id="go-winner" style="font-size:clamp(2rem,5vw,3.2rem)">الفائز!</div>
+  <div class="go-scores" id="go-scores"></div>
 </div>
 
-<!-- ═══ TAB: SETTINGS ═══ -->
-<div id="tab-settings" style="display:none">
-  <div class="sg">
-    <div class="sc">
-      <div class="sc-t">🎨 الثيم</div>
-      <div class="theme-btns">
-        <button class="theme-btn active" style="background:#00061a;color:#FFCC00;border-color:#FFCC00" onclick="setTheme('classic',this)">Classic</button>
-        <button class="theme-btn" style="background:#f0f4ff;color:#333" onclick="setTheme('day',this)">☀️ نهاري</button>
-        <button class="theme-btn" style="background:linear-gradient(135deg,#1a0533,#5512a0);color:#ff6ec7" onclick="setTheme('canva',this)">🎨 Canva</button>
-        <button class="theme-btn" style="background:#000;color:#FFD700;border-color:#FFD700" onclick="setTheme('midnight',this)">🌙 Midnight</button>
-      </div>
-    </div>
-    <div class="sc">
-      <div class="sc-t">🎮 قواعد اللعب</div>
-      <div class="srow">
-        <div class="srl">عدد الأخطاء المسموحة</div>
-        <div class="stepper">
-          <button class="st-btn" onclick="stepCFG('maxStrikes',-1,1,5)">−</button>
-          <div class="st-val" id="sv-maxStrikes">3</div>
-          <button class="st-btn" onclick="stepCFG('maxStrikes',1,1,5)">+</button>
-        </div>
-      </div>
-    </div>
-    <div class="sc">
-      <div class="sc-t">🔊 مؤثرات</div>
-      <div class="srow">
-        <div><div class="srl">أصوات اللعبة</div></div>
-        <div class="tog on" id="tog-sounds" onclick="toggleCFG('soundEnabled',this)"></div>
-      </div>
-    </div>
-    <div class="sc">
-      <div class="sc-t">📤 بيانات</div>
-      <div style="display:flex;gap:7px;flex-wrap:wrap">
-        <button class="btn btn-ghost btn-sm" onclick="importJSON()">📥 استيراد</button>
-        <button class="btn btn-ghost btn-sm" onclick="exportJSON()">📤 تصدير</button>
-        <button class="btn btn-red btn-sm" onclick="clearAll()">🗑 مسح</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-</div><!-- /body -->
-
-<div class="toast" id="toast"></div>
+<div class="cf" id="cf"></div>
+<div class="phase-bar" id="phase-bar">Family Feud</div>
 
 <script>
-// ═══════════════════════════════════════════
-//  CONFIG & DATA
-// ═══════════════════════════════════════════
 const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
-const TV_URL = location.origin + "/tv.html";
-
-let CFG = JSON.parse(localStorage.getItem('ff_cfg') || 'null') || {maxStrikes:3, soundEnabled:true, theme:'classic'};
-let QS  = JSON.parse(localStorage.getItem('ff_qs')  || 'null') || [
-  {q:'سمّوا شيئاً تشربه في الصباح؟', answers:[{t:'قهوة',p:40},{t:'شاي',p:30},{t:'حليب',p:15},{t:'عصير',p:10},{t:'ماء',p:5}]},
-];
-let TEAMS = JSON.parse(localStorage.getItem('ff_teams') || 'null') || [
-  {name:'الفريق الأزرق',color:'#2979FF'},
-  {name:'الفريق الأحمر',color:'#E53935'},
-];
-let selQ = 0;
-let GS = {};
-
-// ═══ WS ═══════════════════════════════════
-let ws;
-function connect(){
-  ws = new WebSocket(WS_URL);
-  ws.onopen = () => {
-    setConn(true);
-    ws.send(JSON.stringify({type:'host_join'}));
-  };
-  ws.onclose = () => { setConn(false); setTimeout(connect,3000); };
-  ws.onerror = () => setConn(false);
-  ws.onmessage = e => { try{ handleMsg(JSON.parse(e.data)); }catch{} };
-}
-function send(obj){ if(ws&&ws.readyState===1) ws.send(JSON.stringify(obj)); }
-function setConn(ok){
-  document.getElementById('conn-dot').className='conn-dot'+(ok?' on':' err');
-  document.getElementById('conn-lbl').textContent=ok?'متصل':'غير متصل';
-}
-
-function syncToServer(){
-  send({type:"host_set_questions", questions: QS});
-  send({type:'host_set_teams', teams: TEAMS});
-  send({type:'host_set_theme', theme: CFG.theme||'classic'});
-}
-
-function handleMsg(m){
-  if(m.type==='state'){ GS=m; renderGame(); }
-  else if(m.type==='players_update'){ renderPlayers(m.players); }
-  else if(m.type==='request_sync'){ syncToServer(); }
-}
-
-// ═══ TABS ═══════════════════════════════════
-function switchTab(name,btn){
-  ['game','questions','teams','settings'].forEach(t=>
-    document.getElementById('tab-'+t).style.display=t===name?'':'none');
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-}
-
-// ═══ GAME RENDER ═══════════════════════════
-const PHASE_LABELS = {
-  setup:'الإعداد', faceoff:'المواجهة', playpass:'Play أو Pass',
+const PHASE_AR = {
+  setup:'الإعداد', faceoff:'المواجهة', playpass:'اختيار اللعب',
   playing:'يلعب', steal:'السرقة', end_round:'نهاية الجولة', game_over:'نهاية اللعبة'
 };
-const PHASE_COLORS = {
-  setup:'rgba(255,204,0,.1)', faceoff:'rgba(124,106,250,.15)',
-  playpass:'rgba(229,152,0,.15)', playing:'rgba(46,125,50,.15)',
-  steal:'rgba(229,57,53,.15)', end_round:'rgba(76,175,80,.12)',
-  game_over:'rgba(255,204,0,.15)'
-};
 
-function renderGame(){
-  if(!GS.phase) {
-    GS = {
-      phase: 'setup', round: 0, bank: 0, strikes: 0,
-      max_strikes: CFG.maxStrikes || 3,
-      scores: [0,0], teams: TEAMS,
-      board_tiles: [], questions: QS,
-      fo_buzz_open: false, fo_buzzer: null, fo_buzzer2: null,
-      fo_winner_idx: null, steal_team: null,
-      question_visible: false, active_team: 0
-    };
+let GS = {}, ws;
+let buzzTimer, strikeTimer;
+
+function connect(){
+  ws = new WebSocket(WS_URL);
+  ws.onopen  = () => ws.send(JSON.stringify({type:'tv_join'}));
+  ws.onclose = () => setTimeout(connect, 3000);
+  ws.onerror = () => {};
+  ws.onmessage = e => { try{ handle(JSON.parse(e.data)); }catch(err){ console.error(err); } };
+}
+
+function handle(m){
+  if(m.type === 'state'){
+    GS = m;
+    render();
   }
-  const phase = GS.phase;
+  else if(m.type === 'theme_change'){
+    document.body.setAttribute('data-theme', m.theme);
+  }
+  else if(m.type === 'strike_flash'){
+    showStrikeOverlay(m.count);
+  }
+  else if(m.type === 'round_winner'){
+    showRoundWinner(m.team);
+  }
+  else if(m.type === 'buzz_winner'){
+    showBuzzBanner(m.player, 1);
+  }
+  else if(m.type === 'buzz_winner2'){
+    showBuzzBanner(m.player, 2);
+  }
+  else if(m.type === 'buzz_opened' || m.type === 'buzz_reset'){
+    hideBuzzBanner();
+  }
+  else if(m.type === 'game_reset'){
+    document.getElementById('go-ov').classList.remove('on');
+    document.getElementById('win-ov').classList.remove('on');
+  }
+}
 
-  // Phase badge
-  const pb = document.getElementById('phase-badge');
-  pb.style.background = PHASE_COLORS[phase] || '';
-  document.getElementById('phase-txt').textContent = PHASE_LABELS[phase] || phase;
-
+function render(){
+  if(!GS.phase) return;
+  // Theme
+  if(GS.theme) document.body.setAttribute('data-theme', GS.theme);
+  // Phase bar
+  document.getElementById('phase-bar').textContent = PHASE_AR[GS.phase] || GS.phase;
   // Scores
-  renderScoreMini();
-
-  // Bank + Round
-  document.getElementById('bank-val').textContent = GS.bank||0;
-  const totalQ = (GS.questions||QS).length;
-  document.getElementById('round-disp').textContent = totalQ ? `${(GS.round||0)+1}/${totalQ}` : '—';
-
+  renderScores();
   // Question
-  const qDisplay = document.getElementById('q-display');
-  const questions = GS.questions || QS;
-  if(questions.length && GS.round < questions.length){
-    qDisplay.style.display='';
-    document.getElementById('q-text').textContent = questions[GS.round].q;
-    const vis = GS.question_visible;
-    document.getElementById('q-visibility-hint').textContent = vis ? '👁 ظاهر للجمهور' : '🙈 مخفي عن الجمهور';
-    document.getElementById('toggle-q-btn').textContent = vis ? '🙈 إخفاء عن الجمهور' : '👁 إظهار للجمهور';
-  } else {
-    qDisplay.style.display='none';
-  }
-
+  renderQuestion();
   // Board
-  renderHostBoard();
-
+  renderBoard();
   // Strikes
   renderStrikes();
-
-  // Controls
-  renderPhaseControls();
-
-  // Danger Zone
-  renderDangerZone();
-
-  // Round buttons
-  renderRoundBtns();
+  // Game over
+  if(GS.phase === 'game_over') showGameOver();
 }
 
-function renderScoreMini(){
-  const el = document.getElementById('score-mini');
-  const teams = GS.teams || TEAMS;
+function renderScores(){
+  const el = document.getElementById('scores');
+  const teams  = GS.teams  || [];
   const scores = GS.scores || [0,0];
-  el.innerHTML = teams.map((t,i)=>`
-    <div class="sm-box${i===GS.active_team?' active':''}" style="border-color:${i===GS.active_team?t.color:'transparent'}">
-      <div class="sm-name" style="color:${t.color}">${esc(t.name)}</div>
-      <div class="sm-score">${scores[i]}</div>
-    </div>`).join('');
+  const bank   = GS.bank   || 0;
+  const active = GS.active_team || 0;
+
+  if(!teams.length) return;
+
+  const bankHTML = `
+    <div class="bank">
+      <div class="bank-lbl">البنك</div>
+      <div class="bank-val">${bank}</div>
+    </div>`;
+
+  el.innerHTML = teams.map((t,i) => `
+    <div class="score-box${i===active?' active':''}"
+         style="border-color:${i===active?t.color:'rgba(255,255,255,.1)'}">
+      <div class="sb-bar" style="background:${t.color}"></div>
+      <div class="sb-name" style="color:${t.color}">${esc(t.name)}</div>
+      <div class="sb-score">${scores[i]}</div>
+    </div>
+    ${i===0 ? bankHTML : ''}
+  `).join('');
 }
 
-function renderHostBoard(){
-  const el = document.getElementById('host-board');
+function renderQuestion(){
+  const qw = document.getElementById('q-wrap');
+  const qs  = GS.questions || [];
+  const q   = qs[GS.round || 0];
+  if(GS.question_visible && q){
+    qw.textContent = q.q;
+    qw.className = 'q-wrap';
+  } else {
+    qw.textContent = 'Family Feud';
+    qw.className = 'q-wrap hidden';
+  }
+}
+
+function renderBoard(){
+  const el    = document.getElementById('board');
   const tiles = GS.board_tiles || [];
   if(!tiles.length){ el.innerHTML=''; return; }
-  el.style.gridTemplateColumns = tiles.length<=3?'1fr':'1fr 1fr';
-  const phase = GS.phase;
-  const b1idx = GS.fo_buzzer?.answer_idx;
-  const b2idx = GS.fo_buzzer2?.answer_idx;
-
-  el.innerHTML = tiles.map((tile,i)=>{
-    const isSel1 = b1idx===i, isSel2 = b2idx===i;
-    let cls = 'host-tile';
-    if(tile.revealed) cls+=' revealed';
-    if(isSel1||isSel2) cls+=' fo-sel';
-    const clickable = !tile.revealed ? `onclick="hostRevealTile(${i})"` : '';
-    return `<div class="${cls}" ${clickable}>
-      <div class="ht-n">${i+1}</div>
-      <div class="ht-text">${esc(tile.text)}</div>
-      <div class="ht-pts">${tile.pts}</div>
-      ${isSel1?`<span style="font-size:.66rem;color:#ff9800">B1</span>`:''}
-      ${isSel2?`<span style="font-size:.66rem;color:#e040fb">B2</span>`:''}
-    </div>`;
-  }).join('');
+  el.className = 'board' + (tiles.length <= 3 ? ' col1' : '');
+  el.innerHTML = tiles.map((t,i) => `
+    <div class="tw">
+      <div class="tile${t.revealed?' flip':''}">
+        <div class="tf"><div class="tn">${i+1}</div></div>
+        <div class="tb">
+          <div class="tt">${esc(t.text)}</div>
+          <div class="tp">${t.pts}</div>
+        </div>
+      </div>
+    </div>`).join('');
 }
 
 function renderStrikes(){
-  const el = document.getElementById('strikes-display');
-  const max = GS.max_strikes || CFG.maxStrikes || 3;
+  const el  = document.getElementById('strikes');
+  const max = GS.max_strikes || 3;
   const cur = GS.strikes || 0;
+  const ph  = GS.phase;
+  if(!ph || ph==='setup' || ph==='faceoff' || ph==='playpass'){
+    el.innerHTML=''; return;
+  }
   el.innerHTML = Array.from({length:max},(_,i)=>
-    `<div class="sd-x${i<cur?' lit':''}">✕</div>`).join('');
+    `<div class="sx${i<cur?' lit':''}">✕</div>`).join('');
 }
 
-// ─── Danger Zone: Cancel + Reset ───
-function renderDangerZone(){
-  const el = document.getElementById('danger-zone-wrap');
-  const phase = GS.phase;
-  // إظهار الـ Danger Zone فقط إذا اللعبة بدأت (مو setup)
-  if(!phase || phase === 'setup'){
-    el.innerHTML = ''; return;
+/* ── Strike overlay ── */
+function showStrikeOverlay(count){
+  const ov   = document.getElementById('stk-ov');
+  const wrap = document.getElementById('stk-wrap');
+  wrap.innerHTML = '';
+  for(let i=0;i<count;i++){
+    const x=document.createElement('div');
+    x.className='big-x'; x.textContent='✕';
+    x.style.animationDelay=`${i*.15}s`;
+    wrap.appendChild(x);
   }
-  el.innerHTML = `
-    <div class="danger-zone">
-      <div class="dz-title">⚠️ منطقة الخطر</div>
-      <div class="ctrl-btns">
-        <button class="cb cb-danger" onclick="cancelGame()">⏹ إلغاء الجولة الحالية</button>
-        <button class="cb cb-danger" onclick="resetGame()">🔄 إعادة اللعبة كاملة</button>
-      </div>
-    </div>`;
+  ov.classList.add('on');
+  clearTimeout(strikeTimer);
+  strikeTimer = setTimeout(()=>ov.classList.remove('on'), 1000+(count*150));
+  playBuzz('strike');
 }
 
-function renderPhaseControls(){
-  const el = document.getElementById('phase-controls');
-  const phase = GS.phase;
-  const teams = GS.teams || TEAMS;
-  const winner_idx = GS.fo_winner_idx;
-  const winner_name = winner_idx!=null ? teams[winner_idx]?.name : '—';
-  const steal_team_name = GS.steal_team!=null ? teams[GS.steal_team]?.name : '—';
-
-  let html = '';
-
-  if(phase==='setup'||!phase){
-    html = `<div class="ctrl-section">
-      <div class="ctrl-title">ابدأ اللعبة</div>
-      <div class="ctrl-btns">
-        <button class="cb cb-gold" onclick="loadRound(0)">▶ ابدأ الجولة الأولى</button>
-      </div>
-    </div>`;
-  }
-
-  else if(phase==='faceoff'){
-    const buzzOpen = GS.fo_buzz_open;
-    const b1 = GS.fo_buzzer, b2 = GS.fo_buzzer2;
-    html = `
-    <div class="ctrl-section">
-      <div class="ctrl-title">المواجهة – تحكم الزر</div>
-      <div class="ctrl-btns">
-        ${buzzOpen
-          ? `<button class="cb cb-gray" onclick="closeBuzz()">🔒 أغلق الزر</button>`
-          : `<button class="cb cb-accent" onclick="openBuzz()">🔓 افتح الزر للاعبين</button>`}
-        <button class="cb cb-gray" onclick="resetBuzz()">🔄 إعادة ضبط</button>
-      </div>
-    </div>`;
-
-    if(b1){
-      const tiles = GS.board_tiles || [];
-      html += `
-      <div class="fo-panel">
-        <div class="ctrl-title">تأكيد الإجابات</div>
-        <div class="fo-slot">
-          <div class="fo-slot-name">
-            <div class="fo-dot" style="background:${b1.color}"></div>
-            ${esc(b1.name)} — ${esc(b1.team)}
-            ${b1.answer_idx!=null?`<span style="color:var(--green);font-size:.72rem">✓ رقم ${b1.answer_idx+1}</span>`:
-              `<span style="color:var(--muted);font-size:.72rem">لم يختر بعد</span>`}
-          </div>
-          <div class="fo-ans-btns">
-            ${tiles.map((t,i)=>`<button class="fo-ans-btn${b1.answer_idx===i?' sel':''}" onclick="setFOAnswer(1,${i})">${i+1}. ${esc(t.text)}</button>`).join('')}
-            <button class="fo-ans-btn wrong${b1.answer_idx===-1?' sel':''}" onclick="setFOAnswer(1,-1)">✕ خاطئة</button>
-          </div>
-        </div>
-        ${b2?`
-        <div class="fo-slot">
-          <div class="fo-slot-name">
-            <div class="fo-dot" style="background:${b2.color}"></div>
-            ${esc(b2.name)} — ${esc(b2.team)}
-            ${b2.answer_idx!=null?`<span style="color:var(--green);font-size:.72rem">✓ رقم ${b2.answer_idx+1}</span>`:
-              `<span style="color:var(--muted);font-size:.72rem">لم يختر بعد</span>`}
-          </div>
-          <div class="fo-ans-btns">
-            ${tiles.filter((_,i)=>!GS.board_tiles[i].revealed||i===b2.answer_idx).map((t,i)=>`<button class="fo-ans-btn${b2.answer_idx===i?' sel':''}" onclick="setFOAnswer(2,${i})">${i+1}. ${esc(t.text)}</button>`).join('')}
-            <button class="fo-ans-btn wrong${b2.answer_idx===-1?' sel':''}" onclick="setFOAnswer(2,-1)">✕ خاطئة</button>
-          </div>
-        </div>`:''}
-      </div>`;
-    }
-
-    html += `<div class="ctrl-section">
-      <div class="ctrl-title">تخطي المواجهة</div>
-      <div class="ctrl-btns">
-        ${teams.map((t,i)=>`<button class="cb cb-blue" style="border-color:${t.color}" onclick="skipFO(${i})">دور ${esc(t.name)}</button>`).join('')}
-      </div>
-    </div>`;
-  }
-
-  else if(phase==='playpass'){
-    html = `<div class="ctrl-section">
-      <div class="ctrl-title">الفائز: <span style="color:var(--gold)">${esc(winner_name)}</span></div>
-      <div class="ctrl-btns">
-        <button class="cb cb-green" onclick="doPlayPass('play')">▶ Play – يلعب ${esc(winner_name)}</button>
-        <button class="cb cb-orange" onclick="doPlayPass('pass')">⏩ Pass – يمرر للخصم</button>
-      </div>
-    </div>`;
-  }
-
-  else if(phase==='playing'){
-    const at = GS.active_team || 0;
-    const tname = (GS.teams||TEAMS)[at]?.name || '—';
-    html = `<div class="ctrl-section">
-      <div class="ctrl-title">يلعب الآن: <span style="color:${(GS.teams||TEAMS)[at]?.color}">${esc(tname)}</span></div>
-      <div class="ctrl-btns">
-        <button class="cb cb-red" onclick="doStrike()">✕ إجابة خاطئة</button>
-        <button class="cb cb-gray" onclick="revealAll()">👁 كشف الكل</button>
-        <button class="cb cb-green" onclick="endRound()">✅ انتهت الجولة</button>
-      </div>
-    </div>`;
-  }
-
-  else if(phase==='steal'){
-    html = `<div class="ctrl-section">
-      <div class="ctrl-title">السرقة – <span style="color:var(--red)">${esc(steal_team_name)}</span></div>
-      <div class="ctrl-btns">
-        <button class="cb cb-green" onclick="stealResult(true)">✅ صحيحة – يسرقون النقاط</button>
-        <button class="cb cb-red" onclick="stealResult(false)">✕ خاطئة – النقاط للفريق الأول</button>
-      </div>
-    </div>`;
-  }
-
-  else if(phase==='end_round'){
-    const totalQ = (GS.questions||QS).length;
-    const isLast = (GS.round||0)+1 >= totalQ;
-    html = `<div class="ctrl-section">
-      <div class="ctrl-title">نهاية الجولة</div>
-      <div class="ctrl-btns">
-        <button class="cb cb-gray" onclick="revealAll()">👁 كشف المتبقي</button>
-        ${isLast
-          ? `<button class="cb cb-gold" onclick="send({type:'host_next_round'})">🏁 نهاية اللعبة</button>`
-          : `<button class="cb cb-gold" onclick="send({type:'host_next_round'})">الجولة التالية ›</button>`}
-      </div>
-    </div>`;
-  }
-
-  else if(phase==='game_over'){
-    html = `<div class="ctrl-section">
-      <div class="ctrl-title" style="color:var(--gold)">🏆 انتهت اللعبة!</div>
-      <div class="ctrl-btns">
-        <button class="cb cb-gold" onclick="resetGame()">🔄 لعبة جديدة</button>
-      </div>
-    </div>`;
-  }
-
-  el.innerHTML = html;
+/* ── Buzz banner ── */
+function showBuzzBanner(player, slot){
+  const b = document.getElementById('buzz-banner');
+  document.getElementById('bb-name').textContent = player.name;
+  document.getElementById('bb-name').style.color = player.color;
+  document.getElementById('bb-team').textContent = (slot===2?'الثاني: ':'')+player.team;
+  b.classList.add('show');
+  clearTimeout(buzzTimer);
+  buzzTimer = setTimeout(hideBuzzBanner, 9000);
+  playBuzz('buzz');
+}
+function hideBuzzBanner(){
+  document.getElementById('buzz-banner').classList.remove('show');
 }
 
-function renderRoundBtns(){
-  const el = document.getElementById('round-btns');
-  el.innerHTML = (GS.questions||QS).map((_,i)=>
-    `<button class="btn btn-sm ${i===(GS.round||0)?'btn-gold':'btn-ghost'}" onclick="loadRound(${i})">${i+1}</button>`
-  ).join('');
+/* ── Round winner ── */
+function showRoundWinner(teamName){
+  document.getElementById('win-title').textContent = `🎉 ${teamName}`;
+  document.getElementById('win-ov').classList.add('on');
+  spawnConfetti();
 }
 
-function renderPlayers(players){
-  const el = document.getElementById('players-list');
-  document.getElementById('pl-count').textContent = players.length;
-  if(!players.length){
-    el.innerHTML='<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:10px">لا يوجد لاعبون</div>';
-    return;
-  }
-  el.innerHTML = players.map(p=>`
-    <div class="pl-item">
-      <div class="pl-dot" style="background:${p.color}"></div>
-      <div class="pl-name">${esc(p.name)}</div>
-      <div class="pl-team">${esc(p.team)}</div>
-    </div>`).join('');
+/* ── Game over ── */
+function showGameOver(){
+  const go = document.getElementById('go-ov');
+  if(go.classList.contains('on')) return;
+  const teams  = GS.teams  || [];
+  const scores = GS.scores || [0,0];
+  const sorted = [...teams.map((t,i)=>({...t,score:scores[i]}))].sort((a,b)=>b.score-a.score);
+  const isTie  = sorted.length>1 && sorted[0].score===sorted[1].score;
+  document.getElementById('go-winner').textContent = isTie?'🤝 تعادل!':'الفائز: '+sorted[0].name;
+  document.getElementById('go-scores').innerHTML = sorted.map(t=>
+    `<div class="go-item">
+       <div class="go-name">${esc(t.name)}</div>
+       <div class="go-pts" style="color:${t.color}">${t.score}</div>
+     </div>`).join('');
+  go.classList.add('on');
+  spawnConfetti();
 }
 
-// ═══ GAME ACTIONS ═══════════════════════════
-function loadRound(r){
-  send({type:'host_load_round', round:r, questions: QS});
-}
-function toggleQuestion(){ send({type:'host_toggle_question'}); }
-function openBuzz(){ send({type:'host_open_buzz'}); }
-function closeBuzz(){ send({type:'host_close_buzz'}); }
-function resetBuzz(){ send({type:'host_open_buzz'}); }
-function hostRevealTile(idx){ send({type:'host_reveal_tile', idx}); }
-function doStrike(){ send({type:'host_strike'}); playSound('strike'); }
-function revealAll(){ send({type:'host_reveal_all'}); }
-function endRound(){ send({type:'host_end_round'}); }
-function stealResult(ok){ send({type:'host_steal_result', correct:ok}); }
-function doPlayPass(choice){ send({type:'host_playpass', choice}); }
-function skipFO(teamIdx){ send({type:'host_playpass', choice:'play'}); }
-function setFOAnswer(slot, tileIdx){
-  send({type:'host_fo_answer', slot, tile_idx: tileIdx>=0?tileIdx:null});
-}
-
-// ─── Cancel & Reset ───
-function cancelGame(){
-  if(!confirm('إلغاء الجولة الحالية والعودة للإعداد؟\n(النقاط تُحفظ)')) return;
-  send({type:'host_cancel_game'});
-  toast('تم إلغاء الجولة');
-}
-function resetGame(){
-  if(!confirm('إعادة اللعبة كاملة؟\nستُحذف جميع النقاط!')) return;
-  send({type:'host_reset_game'});
-  toast('تم إعادة اللعبة 🔄');
-}
-
-// ═══ QUESTIONS ══════════════════════════════
-function renderQList(){
-  const el=document.getElementById('q-items');
-  document.getElementById('q-count').textContent=QS.length;
-  el.innerHTML='';
-  QS.forEach((q,i)=>{
-    const d=document.createElement('div');
-    d.className='q-item'+(i===selQ?' sel':'');
-    d.innerHTML=`<div class="qi-n">${i+1}</div><div class="qi-t">${esc(q.q)||'بدون نص'}</div><button class="qi-d" onclick="delQ(event,${i})">✕</button>`;
-    d.onclick=e=>{if(!e.target.classList.contains('qi-d')){selQ=i;renderQList();renderEditor(i);}};
-    el.appendChild(d);
-  });
-}
-function addQ(){
-  QS.push({q:'',answers:[{t:'',p:40},{t:'',p:30},{t:'',p:20},{t:'',p:10}]});
-  selQ=QS.length-1; saveData(); renderQList(); renderEditor(selQ);
-}
-function delQ(e,i){
-  e.stopPropagation(); if(!confirm('حذف؟'))return;
-  QS.splice(i,1); selQ=Math.min(selQ,QS.length-1); saveData(); renderQList();
-  if(QS.length) renderEditor(selQ); else document.getElementById('q-editor').innerHTML='<div style="height:160px;display:flex;align-items:center;justify-content:center;color:var(--muted)">لا توجد أسئلة</div>';
-}
-function renderEditor(i){
-  const q=QS[i];
-  document.getElementById('q-editor').innerHTML=`
-    <div class="card">
-      <label class="field"><label>نص السؤال</label>
-        <input class="einput" id="ed-q" placeholder="مثال: سمّوا شيئاً في المطبخ؟" value="${esc(q.q)}" oninput="QS[selQ].q=this.value;renderQList()">
-      </label>
-    </div>
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
-        <span style="font-size:.72rem;font-weight:700;color:var(--gold);letter-spacing:1px">الإجابات والنقاط</span>
-        <span style="font-size:.68rem;color:var(--muted)">المجموع المثالي = 100</span>
-      </div>
-      <div class="ans-rows" id="ans-rows"></div>
-      <button class="add-ans" onclick="addAns()">＋ إجابة</button>
-      <div class="pts-bar">
-        <span style="color:var(--muted)">المجموع:</span>
-        <span class="pv" id="pv">0</span>
-      </div>
-    </div>
-    <button class="save-btn" onclick="saveQ()">💾 حفظ وإرسال للسيرفر</button>`;
-  renderAns();
-}
-function renderAns(){
-  const q=QS[selQ], c=document.getElementById('ans-rows'); if(!c)return; c.innerHTML='';
-  q.answers.forEach((a,i)=>{
-    const r=document.createElement('div'); r.className='ans-row';
-    r.innerHTML=`<div class="ans-n">${i+1}</div>
-      <input class="einput" placeholder="نص الإجابة" value="${esc(a.t)}" oninput="QS[selQ].answers[${i}].t=this.value">
-      <input class="einput pts-inp" type="number" min="1" max="99" value="${a.p}" oninput="QS[selQ].answers[${i}].p=parseInt(this.value)||0;updatePts()">
-      <button class="ans-del" onclick="delAns(${i})">✕</button>`;
-    c.appendChild(r);
-  }); updatePts();
-}
-function addAns(){ if(QS[selQ].answers.length>=8){toast('الحد 8 إجابات','err');return} QS[selQ].answers.push({t:'',p:5}); renderAns(); }
-function delAns(i){ if(QS[selQ].answers.length<=2){toast('يجب إجابتان','err');return} QS[selQ].answers.splice(i,1); renderAns(); }
-function updatePts(){
-  const s=QS[selQ].answers.reduce((a,b)=>a+(parseInt(b.p)||0),0);
-  const el=document.getElementById('pv'); if(!el)return;
-  el.textContent=s; el.className='pv '+(s===100?'ok':s>100?'over':'warn');
-}
-function saveQ(){
-  if(!QS[selQ].q.trim()){toast('أدخل نص السؤال','err');return}
-  if(QS[selQ].answers.some(a=>!a.t.trim())){toast('بعض الإجابات فارغة','err');return}
-  saveData(); send({type:'host_set_questions', questions:QS}); toast('تم الحفظ والإرسال ✓');
-}
-
-// ═══ TEAMS ══════════════════════════════════
-function renderTeamsGrid(){
-  const el=document.getElementById('teams-grid'); el.innerHTML='';
-  TEAMS.forEach((t,i)=>{
-    const c=document.createElement('div'); c.className='team-editor';
-    c.innerHTML=`<div class="te-head">
-      <input type="color" class="te-color" value="${t.color}" style="background:${t.color}" oninput="TEAMS[${i}].color=this.value;this.style.background=this.value">
-      <input class="te-name" value="${esc(t.name)}" oninput="TEAMS[${i}].name=this.value">
-      <span style="font-size:.72rem;color:var(--muted)">${(GS.scores||[0,0])[i]} نقطة</span>
-    </div>`;
-    el.appendChild(c);
-  });
-}
-function saveTeams(){ saveData(); send({type:'host_set_teams', teams:TEAMS}); toast('تم حفظ الفرق ✓'); }
-function resetScores(){ if(!confirm('تصفير؟'))return; send({type:'host_reset_game'}); toast('تم التصفير'); }
-
-// ═══ SETTINGS ═══════════════════════════════
-function setTheme(name, btn){
-  CFG.theme=name;
-  document.body.setAttribute('data-theme',name);
-  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  saveData();
-  // ← إرسال الثيم للسيرفر ليُبث لـ TV
-  send({type:'host_set_theme', theme:name});
-}
-function toggleCFG(k,el){ CFG[k]=!CFG[k]; el.classList.toggle('on',CFG[k]); saveData(); }
-function stepCFG(k,d,min,max){
-  CFG[k]=Math.min(max,Math.max(min,(CFG[k]||0)+d));
-  const el=document.getElementById('sv-'+k); if(el)el.textContent=CFG[k];
-}
-
-// ═══ DATA ════════════════════════════════════
-function saveData(){
-  localStorage.setItem('ff_cfg',   JSON.stringify(CFG));
-  localStorage.setItem('ff_qs',    JSON.stringify(QS));
-  localStorage.setItem('ff_teams', JSON.stringify(TEAMS));
-}
-function exportJSON(){
-  const b=new Blob([JSON.stringify({questions:QS,teams:TEAMS,config:CFG},null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='family-feud.json'; a.click();
-  toast('تم التصدير 📤');
-}
-function importJSON(){
-  const inp=document.createElement('input'); inp.type='file'; inp.accept='.json';
-  inp.onchange=e=>{
-    const r=new FileReader();
-    r.onload=ev=>{try{
-      const d=JSON.parse(ev.target.result);
-      if(d.questions) QS=d.questions;
-      if(d.teams) TEAMS=d.teams;
-      if(d.config) CFG={...CFG,...d.config};
-      selQ=0; saveData(); init(); syncToServer(); toast('تم الاستيراد ✓');
-    }catch{toast('ملف غير صالح','err')}};
-    r.readAsText(e.target.files[0]);
-  }; inp.click();
-}
-function clearAll(){ if(!confirm('مسح كل الأسئلة؟'))return; QS=[]; selQ=0; saveData(); renderQList(); send({type:'host_set_questions',questions:[]}); toast('تم المسح'); }
-
-// ═══ SOUNDS ══════════════════════════════════
-let AC=null;
-function getAC(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();return AC}
-function playSound(type){
-  if(!CFG.soundEnabled)return;
+/* ── Sounds ── */
+function playBuzz(type){
   try{
-    const c=getAC(),o=c.createOscillator(),g=c.createGain();
-    o.connect(g);g.connect(c.destination);
-    if(type==='strike'){o.type='sawtooth';o.frequency.setValueAtTime(160,c.currentTime);o.frequency.linearRampToValueAtTime(80,c.currentTime+.4);g.gain.setValueAtTime(.4,c.currentTime);g.gain.linearRampToValueAtTime(.01,c.currentTime+.5);o.start(c.currentTime);o.stop(c.currentTime+.5)}
+    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.connect(g); g.connect(ac.destination);
+    if(type==='buzz'){
+      o.type='square';
+      o.frequency.setValueAtTime(400,ac.currentTime);
+      o.frequency.exponentialRampToValueAtTime(200,ac.currentTime+.2);
+      g.gain.setValueAtTime(.5,ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(.01,ac.currentTime+.4);
+      o.start(ac.currentTime); o.stop(ac.currentTime+.4);
+    } else {
+      o.type='sawtooth';
+      o.frequency.setValueAtTime(160,ac.currentTime);
+      o.frequency.linearRampToValueAtTime(80,ac.currentTime+.4);
+      g.gain.setValueAtTime(.4,ac.currentTime);
+      g.gain.linearRampToValueAtTime(.01,ac.currentTime+.5);
+      o.start(ac.currentTime); o.stop(ac.currentTime+.5);
+    }
   }catch{}
 }
 
-// ═══ UTILS ═══════════════════════════════════
-let _t=null;
-function toast(msg,type=''){
-  const t=document.getElementById('toast');t.textContent=msg;t.className='toast on'+(type?' '+type:'');
-  clearTimeout(_t);_t=setTimeout(()=>t.classList.remove('on'),2400);
-}
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
-function openTV(){ window.open(TV_URL,'_blank'); }
-function copyURL(){
-  navigator.clipboard.writeText(document.getElementById('share-url').textContent)
-    .then(()=>toast('تم النسخ ✓')).catch(()=>toast('انسخ يدوياً','err'));
+/* ── Confetti ── */
+function spawnConfetti(){
+  const c = document.getElementById('cf');
+  c.innerHTML = '';
+  const cols=['#FFCC00','#FF6B6B','#4ECDC4','#45B7D1','#FFEAA7','#a29bfe'];
+  for(let i=0;i<120;i++){
+    const p=document.createElement('div'); p.className='cp';
+    const sz=5+Math.random()*9;
+    p.style.cssText=`left:${Math.random()*100}%;top:-20px;width:${sz}px;height:${sz}px;background:${cols[~~(Math.random()*cols.length)]};border-radius:${Math.random()>.5?'50%':'3px'};animation-duration:${2.5+Math.random()*3}s;animation-delay:${Math.random()*2}s;`;
+    c.appendChild(p);
+  }
 }
 
-// ═══ INIT ════════════════════════════════════
-function init(){
-  document.body.setAttribute('data-theme', CFG.theme||'classic');
-  document.getElementById('share-url').textContent = location.origin + "/buzz.html";
-  renderQList();
-  if(QS.length) renderEditor(selQ);
-  renderTeamsGrid();
-  renderGame();
-  const sv=document.getElementById('sv-maxStrikes'); if(sv) sv.textContent=CFG.maxStrikes;
-  document.getElementById('tog-sounds').classList.toggle('on',CFG.soundEnabled);
-  document.querySelectorAll('.theme-btn').forEach(b=>{
-    if(b.onclick?.toString().includes(`'${CFG.theme||'classic'}'`)) b.classList.add('active');
-  });
-}
-init();
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
 connect();
 </script>
 </body>
