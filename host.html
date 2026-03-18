@@ -376,8 +376,9 @@ input,select,textarea{font-family:'Cairo',sans-serif;outline:none}
 // ═══════════════════════════════════════════
 //  CONFIG & DATA
 // ═══════════════════════════════════════════
-const WS_URL = `ws://${location.hostname}:8000/ws`;
-const TV_URL = `http://${location.hostname}:8000/tv.html`;
+const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+
+const TV_URL = location.origin + "/tv.html";
 let CFG = JSON.parse(localStorage.getItem('ff_cfg') || 'null') || {maxStrikes:3, soundEnabled:true, theme:'classic'};
 let QS  = JSON.parse(localStorage.getItem('ff_qs')  || 'null') || [
   {q:'سمّوا شيئاً تشربه في الصباح؟', answers:[{t:'قهوة',p:40},{t:'شاي',p:30},{t:'حليب',p:15},{t:'عصير',p:10},{t:'ماء',p:5}]},
@@ -862,7 +863,7 @@ function copyURL(){
 // ═══ INIT ════════════════════════════════════
 function init(){
   document.body.setAttribute('data-theme', CFG.theme||'classic');
-  document.getElementById('share-url').textContent = `http://${location.hostname}:8000/buzz.html`;
+  document.getElementById('share-url').textContent = location.origin + "/buzz.html";
   renderQList();
   if(QS.length) renderEditor(selQ);
   renderTeamsGrid();
