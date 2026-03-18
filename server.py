@@ -115,6 +115,7 @@ async def ws_handler(request):
 
             elif t == "host_set_questions":
                 GS["questions"] = m.get("questions",[])
+                await push()  # أخبر الهوست بالـ state الجديد
 
             elif t == "host_set_teams":
                 GS["teams"] = (m.get("teams") or GS["teams"])[:2]
@@ -122,6 +123,9 @@ async def ws_handler(request):
 
             elif t == "host_load_round":
                 ridx = m.get("round", GS["round"])
+                # لو الأسئلة أُرسلت مع الطلب، استخدمها
+                if m.get("questions"):
+                    GS["questions"] = m["questions"]
                 if ridx >= len(GS["questions"]): continue
                 q = GS["questions"][ridx]
                 GS.update({"round":ridx,
@@ -257,6 +261,7 @@ def get_ip():
     except: return "127.0.0.1"
 
 async def main():
+    PORT = int(os.environ.get("PORT", 8000))
     ip = get_ip()
     app = web.Application()
     app.router.add_get("/ws",  ws_handler)
@@ -264,13 +269,16 @@ async def main():
     app.router.add_get("/{f}", file_handler)
     runner = web.AppRunner(app)
     await runner.setup()
-    await web.TCPSite(runner,"0.0.0.0",8000).start()
+    await web.TCPSite(runner, "0.0.0.0", PORT).start()
     print("\n"+"="*52)
-    print("  Family Feud v5 – شغّال!")
+    print("  Family Feud v5 - شغال!")
     print("="*52)
-    print(f"  الهوست:   http://{ip}:8000/host.html")
-    print(f"  TV:       http://{ip}:8000/tv.html")
-    print(f"  اللاعبون: http://{ip}:8000/buzz.html")
+    if PORT == 8000:
+        print(f"  الهوست:   http://{ip}:{PORT}/host.html")
+        print(f"  TV:       http://{ip}:{PORT}/tv.html")
+        print(f"  اللاعبون: http://{ip}:{PORT}/buzz.html")
+    else:
+        print(f"  Railway PORT: {PORT}")
     print("="*52)
     try: await asyncio.Future()
     except asyncio.CancelledError: pass

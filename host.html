@@ -695,7 +695,10 @@ function renderPlayers(players){
 }
 
 // ═══ GAME ACTIONS ═══════════════════════════
-function loadRound(r){ send({type:'host_load_round', round:r}); }
+function loadRound(r){
+  // نرسل الأسئلة مع الطلب كـ backup لو السيرفر ما استقبلها قبل
+  send({type:'host_load_round', round:r, questions: QS});
+}
 function toggleQuestion(){ send({type:'host_toggle_question'}); }
 function openBuzz(){ send({type:'host_open_buzz'}); }
 function closeBuzz(){ send({type:'host_close_buzz'}); }

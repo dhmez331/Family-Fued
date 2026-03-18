@@ -100,7 +100,8 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:#fff;min-height:1
 </div>
 
 <script>
-const WS_URL = `ws://${location.hostname}:8000/ws`;
+const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+
 const TEAMS = [
   {name:'الفريق الأزرق',color:'#2979FF'},
   {name:'الفريق الأحمر',color:'#E53935'},
@@ -124,21 +125,44 @@ function buildTeams(){
 }
 buildTeams();
 
+let pendingJoin = null; // يحفظ بيانات اللاعب لو الاتصال لم يكن جاهزاً
+
 function connect(){
-  ws=new WebSocket(WS_URL);
-  ws.onopen=()=>{document.getElementById('cd').className='cd on'};
-  ws.onclose=()=>{document.getElementById('cd').className='cd err';setTimeout(connect,3000)};
-  ws.onerror=()=>document.getElementById('cd').className='cd err';
-  ws.onmessage=e=>{try{handle(JSON.parse(e.data))}catch{}};
+  ws = new WebSocket(WS_URL);
+  ws.onopen = () => {
+    document.getElementById('cd').className = 'cd on';
+    // لو كان في join معلق، أرسله الآن
+    if(pendingJoin){
+      ws.send(JSON.stringify(pendingJoin));
+      pendingJoin = null;
+    }
+  };
+  ws.onclose = () => {
+    document.getElementById('cd').className = 'cd err';
+    setTimeout(connect, 3000);
+  };
+  ws.onerror = () => document.getElementById('cd').className = 'cd err';
+  ws.onmessage = e => { try{ handle(JSON.parse(e.data)); }catch{} };
 }
-function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+
+function send(o){
+  if(ws && ws.readyState === 1) ws.send(JSON.stringify(o));
+}
 
 function join(){
-  const name=document.getElementById('inp-name').value.trim();
-  if(!name){document.getElementById('err').textContent='أدخل اسمك';return}
-  myName=name; myTidx=selTidx;
-  myTeam=TEAMS[selTidx].name; myColor=TEAMS[selTidx].color;
-  send({type:'player_join',name:myName,team_idx:myTidx});
+  const name = document.getElementById('inp-name').value.trim();
+  if(!name){ document.getElementById('err').textContent = 'أدخل اسمك'; return; }
+  myName = name; myTidx = selTidx;
+  myTeam = TEAMS[selTidx].name; myColor = TEAMS[selTidx].color;
+
+  const joinMsg = {type:'player_join', name:myName, team_idx:myTidx};
+
+  if(ws && ws.readyState === 1){
+    ws.send(JSON.stringify(joinMsg)); // متصل → أرسل فوراً
+  } else {
+    pendingJoin = joinMsg; // غير متصل → احفظه للإرسال عند الاتصال
+    connect(); // حاول الاتصال
+  }
   showBuzz();
 }
 
