@@ -71,15 +71,47 @@ async def push():
     await to_tv(tv_state)
 
 def compute_fo_winner():
+    """
+    منطق المواجهة:
+    - لو B1 أجاب رقم 1 (idx=0) → playpass مباشرة لفريقه
+    - لو B1 أجاب غير رقم 1 أو أخطأ → ابقَ في faceoff وانتظر B2
+    - لو B1 وB2 أجابا → قارن: الأقل index (= الأعلى نقاطاً) يفوز
+    - لو كلاهما أخطأ (idx=-1) → الهوست يختار يدوياً
+    """
     b1, b2 = GS["fo_buzzer"], GS["fo_buzzer2"]
     i1 = b1["answer_idx"] if b1 and b1.get("answer_idx") is not None else None
     i2 = b2["answer_idx"] if b2 and b2.get("answer_idx") is not None else None
+
+    # كلاهما أجابا → قارن
     if i1 is not None and i2 is not None:
-        GS["fo_winner_idx"] = b1["team_idx"] if i1 <= i2 else b2["team_idx"]
-        GS["phase"] = "playpass"
+        if i1 == -1 and i2 == -1:
+            # كلاهما أخطأ → ابقَ في faceoff، الهوست يختار يدوياً
+            pass
+        elif i1 == -1:
+            # B1 أخطأ → B2 يفوز
+            GS["fo_winner_idx"] = b2["team_idx"]
+            GS["phase"] = "playpass"
+        elif i2 == -1:
+            # B2 أخطأ → B1 يفوز
+            GS["fo_winner_idx"] = b1["team_idx"]
+            GS["phase"] = "playpass"
+        else:
+            # كلاهما صح → الأقل index (الأعلى في القائمة) يفوز
+            GS["fo_winner_idx"] = b1["team_idx"] if i1 <= i2 else b2["team_idx"]
+            GS["phase"] = "playpass"
+
+    # B1 فقط أجاب
     elif i1 is not None:
-        GS["fo_winner_idx"] = b1["team_idx"]
-        GS["phase"] = "playpass"
+        if i1 == 0:
+            # رقم 1 مباشرة → playpass لفريقه
+            GS["fo_winner_idx"] = b1["team_idx"]
+            GS["phase"] = "playpass"
+        else:
+            # غير رقم 1 أو خطأ → ابقَ في faceoff وانتظر B2
+            # (الهوست يفتح الزر للاعب الثاني من الـ host panel)
+            pass
+
+    # B2 فقط أجاب (نادر - لو B1 لم يُحدد)
     elif i2 is not None:
         GS["fo_winner_idx"] = b2["team_idx"]
         GS["phase"] = "playpass"
